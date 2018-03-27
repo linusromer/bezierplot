@@ -306,18 +306,6 @@ function are_cubic(graphs,maxerror)
 	end
 end
 
--- returns true iff the function is of type f(x)=b*x^2+c*x+d
--- a, b, c being real numbers
-function is_quadratic(graph,maxerror)
-	local l = #graph
-	local a, b, c, d = parameters_cubic(graph[1][1],graph[1][2],
-	graph[math.floor(l/3)][1],graph[math.floor(l/3)][2],
-	graph[math.floor(2*l/3)][1],graph[math.floor(2*l/3)][2],
-	graph[l][1],graph[l][2])
-	return do_parameters_fit(a,b,c,d,"b*x^2+c*x+d",graph,
-	maxerror,false)
-end
-
 -- returns true iff the inverse function is of type 
 -- f(x)=a*x^3+b*x^2+c*x+d
 -- a, b, c, d being real numbers
@@ -561,8 +549,6 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 		if part == 1 then
 			if is_affine(d,(ymax-ymin)/(10*10^rndy)) then
 				functiontype = "affine"
-			elseif is_quadratic(d,(ymax-ymin)/(10*10^rndy)) then
-				functiontype = "quadratic"
 			elseif are_cubic(graphs,(ymax-ymin)/(10*10^rndy)) then
 				functiontype = "cubic"
 			elseif are_cuberoot(graphs,(xmax-xmin)/(10*10^rndx)) then
@@ -579,33 +565,6 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 		if functiontype == "affine" then 
 			bezierstring = bezierstring .. " -- (" .. round(d[#d][1],
 			rndx) .. "," .. round(d[#d][2],rndy) ..")"
-		elseif functiontype == "quadratic" then 
-			if d[1][5] then -- extremum at beginning
-				bezierstring = bezierstring .. " parabola bend (" 
-				.. round(d[1][1],rndx) .. ","
-				.. round(d[1][2],rndy) .. ")"
-			elseif d[#d][5] then -- extremum at end
-				bezierstring = bezierstring .. " parabola[bend at end] (" 
-				.. round(d[#d][1],rndx) .. ","
-				.. round(d[#d][2],rndy) .. ")"
-			else
-				local startindex = 1
-				for k = 2, #d-1 do
-					if d[k][5] then -- extremum inbetween
-						bezierstring = bezierstring .. " parabola bend (" 
-						.. round(d[k][1],rndx) .. ","
-						.. round(d[k][2],rndy) .. ") ("
-						.. round(d[#d][1],rndx) .. ","
-						.. round(d[#d][2],rndy) .. ")"
-						startindex = #d
-						break -- there shouldn't be any other extrema
-					end
-				end
-				if startindex ~= #d then -- if no special points inbetween
-					bezierstring = bezierstring 
-					.. graphtobezier(d,startindex,#d,rndx,rndy,false)
-				end
-			end
 		elseif functiontype == "cubic" then 
 			local startindex = 1
 			local extremainbetween = false

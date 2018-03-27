@@ -86,15 +86,7 @@ Gnuplot).
 
 ## Are the Graphs Produced by bezierplot Exact?
 The graphs of quadratic and cubic functions and their inverse are exact (up to numeric precision).
-Parabola and sine and cosine functions use the predefined splines from Tik Z if possible. E.g.:
-```
-bezierplot "0.5*x^2-2*x-1"
-```
-outputs
-```
-(-2,5) parabola bend (2,-3) (5,1.5)
-```
-or
+Sine and cosine functions use the predefined splines from TikZ (which are very close approximations) if possible. E.g.
 ```
 bezierplot "cos(x)"
 ```
@@ -139,16 +131,22 @@ for MiKTeX), you will receive automatically the following picture:
 Things get even better with LuaLaTeX, because it can call Lua directly and do not need shell-escape
 enabled:
 ```
+\begin{verbatim}
 \documentclass{article}
-\usepackage{tikz}
+\usepackage{tikz,xparse}
 \directlua{require("bezierplot")}
-\providecommand{\bezierplot}[1]{\directlua{tex.sprint(bezierplot("#1",-5,5,-5,5))}}
+\DeclareExpandableDocumentCommand{\xbezierplot}{%
+O{-5} O{5} O{-5} O{5} m}{%
+\directlua{tex.sprint(bezierplot("#5",#1,#2,#3,#4))}}
+\providecommand\bezierplot{\romannumeral`\^^@\xbezierplot}
 \begin{document}
 \tikz \draw \bezierplot{x^2};
 \end{document}
+\end{verbatim}
 ```
-Of course, you can improve the command \bezierplot with optional arguments for the lower and
-upper bounds.
+The above example also extends the \bezierplot command in such way, that
+you may set the bounds as options: E.g. \bezierplot[0][1][2]{x^2} will set
+0 ≤ x ≤ 1 and 2 ≤ y ≤ 5.
 
 ## Author
 

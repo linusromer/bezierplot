@@ -1,6 +1,7 @@
 % !TEX program = LuaLaTeX --shell-escape
-\documentclass[DIV=14]{scrartcl}
+\documentclass{article}
 \usepackage{tikz,xparse,multicol}
+\usepackage[margin=3.5cm,top=1.75cm]{geometry}
 \title{bezierplot}\author{Linus Romer}
 \directlua{require("bezierplot")}
 \DeclareDocumentCommand{\graphcomparison}{ m m }{
@@ -109,23 +110,15 @@ The following graphs are drawn with \texttt{bezierplot} (black) and Gnuplot (red
 \graphcomparison{log(x+4)}{log(x+4)}
 \end{multicols}
 \section{Are the Graphs Produced by bezierplot Exact?}
-The graphs of quadratic and cubic functions and their inverse are exact (up to numeric precision). Parabola and sine and cosine functions use the predefined splines from Ti\emph{k}Z if possible. E.g.:
-\begin{verbatim}
-bezierplot "0.5*x^2-2*x-1"
-\end{verbatim}
-outputs
-\begin{verbatim}
-(-2,5) parabola bend (2,-3) (5,1.5)
-\end{verbatim}
-or
+The graphs of quadratic and cubic functions and their inverse are exact (up to numeric precision). Sine and cosine functions use the predefined splines from Ti\emph{k}Z (which are very close approximations) if possible. E.g.
 \begin{verbatim}
 bezierplot "cos(x)"
 \end{verbatim}
 outputs
 \begin{verbatim}
 (-5,0.28) .. controls (-4.91,0.2) and (-4.82,0.11) .. (-4.71,0) 
-sin (-3.14,-1) cos (-1.57,0) sin (0,1) cos (1.57,0) sin (3.14,-1) cos (4.71,0) 
-.. controls (4.82,0.11) and (4.91,0.2) .. (5,0.28)
+sin (-3.14,-1) cos (-1.57,0) sin (0,1) cos (1.57,0) sin (3.14,-1) 
+cos (4.71,0) .. controls (4.82,0.11) and (4.91,0.2) .. (5,0.28)
 \end{verbatim}
 \section{Options}
 You can set the window of the graph as follows:
@@ -161,12 +154,14 @@ If you run \LaTeX{} with enabled shell-escape (option \verb|--shell-escape| for 
 Things get even better with Lua\LaTeX{}, because it can call Lua directly and do not need shell-escape enabled:
 \begin{verbatim}
 \documentclass{article}
-\usepackage{tikz}
+\usepackage{tikz,xparse}
 \directlua{require("bezierplot")}
-\providecommand{\bezierplot}[1]{\directlua{tex.sprint(bezierplot("#1",-5,5,-5,5))}}
+\DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} m}{%
+\directlua{tex.sprint(bezierplot("#5",#1,#2,#3,#4))}}
+\providecommand\bezierplot{\romannumeral`\^^@\xbezierplot}
 \begin{document}
 \tikz \draw \bezierplot{x^2};
 \end{document}
 \end{verbatim}
-Of course, you can improve the command \verb|\bezierplot| with optional arguments for the lower and upper bounds.
+The above example also extends the \verb|\bezierplot| command in such way, that you may set the bounds as options: E.g. \verb|\bezierplot[0][1][2]{x^2}| will set $0\leq x\leq 1$ and $2\leq y \leq 5$.
 \end{document}

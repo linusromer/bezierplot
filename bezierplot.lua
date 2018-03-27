@@ -1,5 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under GPLv3
+abs = math.abs
 acos = math.acos
 asin = math.asin
 atan = math.atan
@@ -21,7 +22,7 @@ function cbrt(x)
 	end
 end
 
-function sign(x)
+function sgn(x)
 	if x<0 then
 		return -1
 	elseif x>0 then
@@ -30,8 +31,6 @@ function sign(x)
 		return 0
 	end
 end
-
-
 
 function round(num, decimals)
 	local result = tonumber(string.format("%." .. (decimals or 0) .. "f", num))
@@ -380,14 +379,14 @@ function is_sin(graph,maxerror)
 	if lastspecialindex <= firstspecialindex then return false end
 	-- declaring for case if inflection point is first
 	local a = math.abs(graph[lastspecialindex][2]
-	-graph[firstspecialindex][2])*sign(graph[firstspecialindex][3])
+	-graph[firstspecialindex][2])*sgn(graph[firstspecialindex][3])
 	local b = (specialsbetween - 0.5) * math.pi / 
 	(graph[lastspecialindex][1] - graph[firstspecialindex][1])
 	local c = - graph[firstspecialindex][1]
 	local d = graph[firstspecialindex][2]	
 	if graph[firstspecialindex][5] then -- if extremum is first
 		a = math.abs(graph[lastspecialindex][2]
-		-graph[firstspecialindex][2])*sign(graph[lastspecialindex][3])
+		-graph[firstspecialindex][2])*sgn(graph[lastspecialindex][3])
 		c = - graph[lastspecialindex][1]
 		d = graph[lastspecialindex][2]
 	end
@@ -522,7 +521,8 @@ end
 
 -- main function
 function bezierplot(functionstring,xmin,xmax,ymin,ymax)
-	local f = assert(load("local x = ...; return " .. functionstring))
+	local fstringreplaced = string.gsub(functionstring, "%*%*", "^")
+	local f = assert(load("local x = ...; return " .. fstringreplaced)) 
 	xmin, xmax = math.min(xmin,xmax), math.max(xmin,xmax)
 	local xstep = (xmax-xmin)/20000
 	-- the output of the x coordinates will be rounded to rndx digits

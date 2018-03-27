@@ -752,27 +752,31 @@ end
 
 -- main program --
 
-if #arg == 1 or #arg == 3 or #arg == 5 then
-	local xmin = -5
-	local xmax = 5
-	if #arg >= 2 then xmin = arg[2] end
-	if #arg >= 3 then
-		if arg[3] == arg[2] then
-			xmax = xmin + 10
-		else
-			xmax = arg[3]
+if not pcall(debug.getlocal, 4, 1) then
+	if #arg >= 1 then
+		local xmin = -5
+		local xmax = 5
+		if #arg >= 2 then xmin = arg[2] end
+		if #arg >= 3 then
+			if arg[3] == arg[2] then
+				xmax = xmin + 10
+			else
+				xmax = arg[3]
+			end
 		end
-	end
-	local ymin = -5
-	local ymax = 5
-	if #arg >= 4 then ymin = arg[4] end
-	if #arg == 5 then 
-		if arg[5] == arg[4] then
-			ymax = ymin + 10
-		else
-			ymax = arg[5]
+		local ymin = -5
+		local ymax = 5
+		if #arg >= 4 then ymin = arg[4] end
+		if #arg >= 5 then 
+			if arg[5] == arg[4] then
+				ymax = ymin + 10
+			else
+				ymax = arg[5]
+			end
 		end
+		print(bezierplot(arg[1],xmin,xmax,ymin,ymax))
 	end
-	print(bezierplot(arg[1],xmin,xmax,ymin,ymax))
 end
+
+
 

@@ -1,9 +1,8 @@
-% !TEX program = LuaLaTeX --shell-escape
+% !TEX program = pdfLaTeX --shell-escape
 \documentclass{article}
-\usepackage{tikz,xparse,multicol}
+\usepackage{tikz,multicol,bezierplot}
 \usepackage[margin=3.5cm,top=1.75cm]{geometry}
 \title{bezierplot}\author{Linus Romer}
-\directlua{require("bezierplot")}
 \DeclareDocumentCommand{\graphcomparison}{ m m }{
 	\begin{center}
 	\begin{tikzpicture}[scale=.4]
@@ -14,7 +13,7 @@
 		\foreach \x in {-4,-3,-2,-1,1,2,3,4} {\draw (\x,1pt) -- (\x,-1pt) node[below]{\tiny \x};}  
       		\foreach \y in {-4,-3,-2,-1,1,2,3,4} {\draw (1pt,\y) -- (-1pt,\y) node[left]{\tiny \y};}   
       		\draw[color=red,domain=-5:5,range=-5:5,samples=200] plot function{#2};
-		\draw \directlua{tex.sprint(bezierplot("#1", -5,5,-5,5))};
+		\draw \bezierplot{#1};
 	\end{tikzpicture}
 	\end{center}
 }
@@ -23,9 +22,9 @@
 Given a smooth function, \texttt{bezierplot} returns a smooth bezier path written in Ti\emph{k}Z. It finds special points such as extreme points and inflection points and reduces the number of used points.
 \begin{center}
 	\begin{tikzpicture}[scale=2]
-		\draw (0,0) .. controls (0,0.74) and (1.67,1.49) .. (5,2.24);
-		\draw (0,0) circle(.01) -- (0,0.74) circle( .01);
-		\draw (1.67,1.49) circle(.01) -- (5,2.24) circle( .01);
+		\draw (0,0) .. controls (0.001,0.746) and (1.667,1.491) .. (5,2.236);
+		\draw (0,0) circle(.01) -- (0.001,0.746) circle( .01);
+		\draw (1.667,1.491) circle(.01) -- (5,2.236) circle( .01);
 	\end{tikzpicture}
 \end{center}
 The upper graph of $y=\sqrt{x}$ used \texttt{bezierplot}, the lower used the built-in plotting function of Ti\emph{k}Z with 101 samples (no smoothing) and is still quite inexact at the beginning.
@@ -116,9 +115,9 @@ bezierplot "cos(x)"
 \end{verbatim}
 outputs
 \begin{verbatim}
-(-5,0.28) .. controls (-4.91,0.2) and (-4.82,0.11) .. (-4.71,0) 
-sin (-3.14,-1) cos (-1.57,0) sin (0,1) cos (1.57,0) sin (3.14,-1) 
-cos (4.71,0) .. controls (4.82,0.11) and (4.91,0.2) .. (5,0.28)
+(-5,0.284) .. controls (-4.909,0.196) and (-4.818,0.105) .. (-4.713,0) 
+sin (-3.142,-1) cos (-1.571,0) sin (0,1) cos (1.571,0) sin (3.142,-1) 
+cos (4.713,0) .. controls (4.818,0.105) and (4.909,0.196) .. (5,0.284)
 \end{verbatim}
 \section{Options}
 You can set the window of the graph as follows:
@@ -148,7 +147,7 @@ Supposing your OS finds \texttt{bezierplot} automatically (e.g. because it is in
 If you run \LaTeX{} with enabled shell-escape (option \verb|--shell-escape| for \TeX{}Live, option \verb|--write18| for MiK\TeX{}), you will receive automatically the following picture:
 \begin{center}
 	\begin{tikzpicture}[scale=.5]
-		\draw (-2.24,5) parabola bend (0,0) (2.24,5);
+		\draw \bezierplot{sqrt(x)};
 	\end{tikzpicture}
 \end{center}
 Things get even better with Lua\LaTeX{}, because it can call Lua directly and do not need shell-escape enabled:

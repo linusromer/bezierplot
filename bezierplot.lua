@@ -514,10 +514,10 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 	xmin, xmax = math.min(xmin,xmax), math.max(xmin,xmax)
 	local xstep = (xmax-xmin)/20000
 	-- the output of the x coordinates will be rounded to rndx digits
-	local rndx = math.max(0,math.floor(3.5-log(xmax-xmin)/log(10)))
+	local rndx = math.max(0,math.floor(4.5-log(xmax-xmin)/log(10)))
 	ymin, ymax = math.min(ymin,ymax), math.max(ymin,ymax)
 	-- the output of the x coordinates will be rounded to rndy digits
-	local rndy = math.max(0,math.floor(3.5-log(ymax-ymin)/log(10)))
+	local rndy = math.max(0,math.floor(4.5-log(ymax-ymin)/log(10)))
 	-- determine parts of the graph that are inside window
 	local graphs = {}
 	local outside = true -- value is outside window

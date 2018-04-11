@@ -2,6 +2,7 @@
 \documentclass{article}
 \usepackage{tikz,multicol,bezierplot}
 \usepackage[margin=3.5cm,top=1.75cm]{geometry}
+\usepackage{fetamont}
 \title{bezierplot}\author{Linus Romer}
 \DeclareDocumentCommand{\graphcomparison}{ m m }{
 	\begin{center}
@@ -19,22 +20,83 @@
 }
 \begin{document}
 \maketitle\noindent
-Given a smooth function, \texttt{bezierplot} returns a smooth bezier path written in Ti\emph{k}Z. It finds special points such as extreme points and inflection points and reduces the number of used points.
+\section{Introduction}
+\texttt{bezierplot} is as well a Lua program as a (Lua)\LaTeX{} package. This document describes both.
+
+Given a smooth function, \texttt{bezierplot} returns a smooth bezier path written in Ti\emph{k}Z/\MP{} notation that approximates the graph of the function. (For polynomial functions of degree $\leq 3$ and inverses of them, the approximation is exact.) It finds special points such as extreme points and inflection points and reduces the number of used points.
+
+The following example will show a comparison of \textsc{gnuplot} with \verb|bezierplot| for the function $y=\sqrt{x}$ for $0\leq x \leq 5$:
 \begin{center}
-	\begin{tikzpicture}[scale=2]
-		\draw (0,0) .. controls (0.001,0.746) and (1.667,1.491) .. (5,2.236);
-		\draw (0,0) circle(.01) -- (0.001,0.746) circle( .01);
-		\draw (1.667,1.491) circle(.01) -- (5,2.236) circle( .01);
+	\begin{tikzpicture}[scale=1.4]
+		\draw (0,0) .. controls (0,0.745) and (1.667,1.491) .. (5,2.236);
+		\draw (0,0) circle(.02) -- (0,0.745) circle( .02);
+		\draw (1.667,1.491) circle(.02) -- (5,2.236) circle( .02);
+		\draw (2.5,.5) node[above]{\verb|bezierplot|};
+		\begin{scope}[shift={(5.2,0)}]
+		\draw[domain=0:5,samples=51] plot function{x**0.5};
+      		\foreach \x in {0,0.1,...,5.05} {\draw  (\x,{\x^0.5}) circle (0.02);}  
+      		\draw (2.5,.5) node[above]{\textsc{gnuplot}};
+      		\end{scope}
 	\end{tikzpicture}
 \end{center}
-The upper graph of $y=\sqrt{x}$ used \texttt{bezierplot}, the lower used the built-in plotting function of Ti\emph{k}Z with 101 samples (no smoothing) and is still quite inexact at the beginning.
+\textsc{gnuplot} used 51 samples (no smoothing) and is still quite inexact at the beginning, whereas \verb|bezierplot| uses 4 points only and is exact!
+\section{Installation}
+As \texttt{bezierplot} is written in Lua, the installation depends if you are using Lua\LaTeX{} or another \LaTeX{} engine.
+\subsection{Installation For Lua\LaTeX{}}
+If you have installed \texttt{bezierplot} by a package manager, the installation is already complete. The manual installation \texttt{bezierplot} is done in 2 steps:
+\begin{itemize}
+	\item copy the files \texttt{bezierplot.lua} and \texttt{bezierplot.sty} somewhere in your \texttt{texmf} tree (e.g. \texttt{~/texmf/})
+	\item update the ls-R databases by running \texttt{mktexlsr}
+\end{itemize}
+\subsection{Additional Installation Steps For Other \LaTeX{} Engines}
+You will have to call \texttt{bezierplot} as an external program via the option \texttt{--shell-escape} (\texttt{--write18} for MiK\TeX{}). Therefore, \texttt{bezierplot.lua} has to be copied under the name \texttt{bezierplot} to a place, where your OS can find it. Under Linux this usually means copying to \texttt{/usr/local/bin/}, but for Windows this will probably include more steps (like adding to the \texttt{PATH}). Of course, Lua has to be installed as well. As soon as you can call \texttt{bezierplot} from a command line (e.g. by typing \verb|bezierplot "x^2"|), it should also work with other \LaTeX{} engines. 
+\section{Loading}
+The \texttt{bezierplot} package is loaded with \verb|\usepackage{bezierplot}|. There are no loading options for the package.
+\section{Basic Usage}
+A minimal example of Lua\LaTeX{} document could be:
+\begin{verbatim}
+\documentclass{article}
+\usepackage{tikz,bezierplot}
+\begin{document}
+\tikz \draw \bezierplot{x^2};	
+\end{document}
+\end{verbatim}
+And you will get:
 \begin{center}
-	\begin{tikzpicture}[scale=2]
-		\draw[domain=0:5,samples=101] plot (\x,{\x^0.5});
-      		\foreach \x in {0,0.05,...,5} {\draw  (\x,{\x^0.5}) circle (0.01);}  
-	\end{tikzpicture}
+	\tikz \draw \bezierplot{x^2};	
 \end{center}
-\section{Getting Started}
+\section{Advanced Usage}
+The command \verb|\bezierplot| has 4 optional arguments in the sense of
+\begin{center}
+	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX]|
+\end{center}
+The defaults are \verb|XMIN| = \verb|YMIN| $= -5$ and  \verb|XMAX| = \verb|YMAX| $= 5$. 
+\begin{center}
+	\begin{tikzpicture}
+		\draw \bezierplot[-1][2]{x^2};
+		\draw (0,0) node[below]{\verb|\bezierplot[-1][2]{x^2}|};
+		\begin{scope}[shift={(7,0)}]
+		\draw \bezierplot[-1][2][0.5][3]{x^2};
+		\draw (0,0) node[below]{\verb|\bezierplot[-1][2][0.5][3]{x^2}|};
+      		\end{scope}
+	\end{tikzpicture}	
+\end{center}
+You may reverse the graph by making \verb|XMIN| bigger than \verb|XMAX|. E.g.
+\begin{verbatim}
+	\bezierplot[-5][5]{0.5*x+1}
+\end{verbatim}
+returns \verb|(-5,-1.5) -- (5,3.5)|, whereas 
+\begin{verbatim}
+	\bezierplot[5][-5]{0.5*x+1}
+\end{verbatim}
+returns the reversed path \verb|(5,3.5) -- (-5,-1.5)|. This is useful, if you want to cycle a path to a closed area:
+\begin{center}
+	\begin{tikzpicture}
+		\fill[black!30] \bezierplot[-1][1]{2-x^2} -- \bezierplot[1][-1]{x^3-x} -- cycle;
+		\draw \bezierplot[-1.1][1.1]{2-x^2};
+		\draw \bezierplot[-1.1][1.1]{x^3-x};
+	\end{tikzpicture}	
+\end{center}
 \subsection{Prerequisites}
 You need to install Lua because \texttt{bezierplot} is a Lua script. The purpose of \texttt{bezierplot} is the use with Ti\emph{k}Z, so an installation of \LaTeX{} or even Lua\TeX{} and Ti\emph{k}Z is recommended.
 \subsection{Running \texttt{bezierplot}}

@@ -34,7 +34,7 @@ end
 
 function round(num, decimals)
 	local result = tonumber(string.format("%." .. (decimals or 0) .. "f", num))
-	if math.abs(result) == 0 then
+	if abs(result) == 0 then
 		return 0
 	else
 		return result
@@ -115,9 +115,9 @@ function diffgraph(func,graph,h)
 			if not dgraph[i][5] then 
 				if dgraph[i][3] == 0 then
 					dgraph[i][5] = true
-				elseif math.abs(dgraph[i][3]*dgraph[i+1][3]) 
+				elseif abs(dgraph[i][3]*dgraph[i+1][3]) 
 				~= dgraph[i][3]*dgraph[i+1][3] then -- this must be near
-					if math.abs(dgraph[i][4]) <= math.abs(dgraph[i+1][4]) then
+					if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
 						dgraph[i][5] = true
 					else
 						dgraph[i+1][5] = true
@@ -127,9 +127,9 @@ function diffgraph(func,graph,h)
 			-- check for ddy/ddx == 0 
 			-- if not already determined as near ddy/ddx=0
 			if not dgraph[i][6] then 
-				if math.abs(dgraph[i][4]*dgraph[i+1][4]) 
+				if abs(dgraph[i][4]*dgraph[i+1][4]) 
 				~= dgraph[i][4]*dgraph[i+1][4] then -- this must be near
-					if math.abs(dgraph[i][4]) <= math.abs(dgraph[i+1][4]) then
+					if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
 						dgraph[i][6] = true
 					else
 						dgraph[i+1][6] = true
@@ -153,12 +153,12 @@ function do_parameters_fit(a,b,c,d,funcstring,funcgraph,maxerror,isinverse)
 	local func = assert(load("local x = ...; return "..funcx))
 	for i = 1, #funcgraph, math.max(1,math.floor(0.01*#funcgraph)) do 
 		if isinverse then
-			if math.abs(func(funcgraph[i][2])-funcgraph[i][1]) 
+			if abs(func(funcgraph[i][2])-funcgraph[i][1]) 
 			> maxerror then
 				return false
 			end
 		else
-			if math.abs(func(funcgraph[i][1])-funcgraph[i][2]) 
+			if abs(func(funcgraph[i][1])-funcgraph[i][2]) 
 			> maxerror then
 				return false
 			end
@@ -342,48 +342,6 @@ function are_cuberoot(graphs,maxerror)
 	end
 end
 
--- returns true iff the function is of type f(x)=a*sin(b*(x+c))+d
--- a, b, c, d being real numbers
-function is_sin(graph,maxerror)
-	local firstspecialindex = 0 -- index of extremum or inflection point
-	for i = 1, #graph do
-		if graph[i][5] or graph[i][6] then
-			firstspecialindex = i
-			break
-		end
-	end
-	if firstspecialindex == 0 then return false end
-	local lastspecialindex = 0
-	local specialsbetween = 0
-	for i = firstspecialindex + 1, #graph do
-		-- lastspecialindex must belong to an extremum if firstspecialindex
-		-- belonged to an inflection point an vice versa
-		if graph[i][5] and graph[firstspecialindex][6] or
-		graph[i][6] and graph[firstspecialindex][5] then
-			lastspecialindex = i
-			specialsbetween = specialsbetween + 1
-		end
-	end
-	if lastspecialindex <= firstspecialindex then return false end
-	-- declaring for case if inflection point is first
-	local a = math.abs(graph[lastspecialindex][2]
-	-graph[firstspecialindex][2])*sgn(graph[firstspecialindex][3])
-	local b = (specialsbetween - 0.5) * math.pi / 
-	(graph[lastspecialindex][1] - graph[firstspecialindex][1])
-	local c = - graph[firstspecialindex][1]
-	local d = graph[firstspecialindex][2]	
-	if graph[firstspecialindex][5] then -- if extremum is first
-		a = math.abs(graph[lastspecialindex][2]
-		-graph[firstspecialindex][2])*sgn(graph[lastspecialindex][3])
-		c = - graph[lastspecialindex][1]
-		d = graph[lastspecialindex][2]
-	end
-	return do_parameters_fit(a,b,c,d,"a*sin(b*(x+c))+d",graph,maxerror
-	,false) 
-	--or do_parameters_fit(-a,b,c,d,"a*sin(b*(x+c))+d",graph,
-	--maxerror,false) -- I just cannot find the mistake...
-end
-
 -- returns true iff function is of type f(x)=a*x+b
 -- a, b being real numbers
 function is_affine(graph,maxerror)
@@ -463,8 +421,8 @@ function graphtobezierapprox(f,g,starti,endi,rndx,rndy,maxerror)
 	for t = .1, .9, .1 do
 		xa = (1-t)^3*g[starti][1]+3*t*(1-t)^2*qx+3*t^2*(1-t)*rx+t^3*g[endi][1]
 		ya = (1-t)^3*g[starti][2]+3*t*(1-t)^2*qy+3*t^2*(1-t)*ry+t^3*g[endi][2]
-		if math.abs(ya-f(xa)) > err then
-			err = math.abs(ya-f(xa))
+		if abs(ya-f(xa)) > err then
+			err = abs(ya-f(xa))
 		end
 	end
 	if err <= maxerror then
@@ -474,9 +432,9 @@ function graphtobezierapprox(f,g,starti,endi,rndx,rndy,maxerror)
 		-- slope as the line from the start point to the end point:
 		local interindex = math.floor(.5*starti+.5*endi) -- will change
 		for i = starti + 1, endi - 1 do
-			if math.abs(g[i][3]-(g[endi][2]-g[starti][2])
+			if abs(g[i][3]-(g[endi][2]-g[starti][2])
 			/(g[endi][1]-g[starti][1])) 
-			< math.abs(g[interindex][3]-(g[endi][2]-g[starti][2])
+			< abs(g[interindex][3]-(g[endi][2]-g[starti][2])
 			/(g[endi][1]-g[starti][1])) then
 				interindex = i
 			end
@@ -506,26 +464,66 @@ function graphtobezier(g,starti,endi,rndx,rndy,isinverse)
 	end
 end
 
+-- reverses a path p e.g. when p = "(0,1) -- (2,3)"
+-- it returns "(2,3) -- (0,1)"
+-- or when p = "(0,1) .. controls (2,3) and (4,5) .. (6,7)"
+-- it returns "(6,7) .. controls (4,5) and (2,3) .. (0,1)"
+function reversepath(p)
+	local r = "" -- will become the reverse path
+	local temppoint  ="" -- will store temporal points like "(0,1)"
+	local tempbetween = "" -- will store things like " .. controls "
+	for i = 1, #p do
+		local c = string.sub(p,i,i)
+		if c == "(" then
+			if tempbetween == " .. " then
+				r = " .. controls " .. r
+			elseif tempbetween == " .. controls " then
+				r = " .. " .. r
+			else
+				r = tempbetween .. r
+			end
+			tempbetween = ""
+			temppoint = "("
+		elseif c == ")" then
+			r = temppoint .. ")" .. r
+			temppoint = ""
+		else
+			if temppoint == "" then -- not reading a point
+				tempbetween = tempbetween .. c
+			else
+				temppoint = temppoint .. c
+			end
+		end
+	end
+	return r
+end
 
 -- main function
 function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 	local fstringreplaced = string.gsub(functionstring, "%*%*", "^")
 	local f = assert(load("local x = ...; return " .. fstringreplaced)) 
+	local isreverse = false
+	if xmin > xmax then
+		isreverse = true
+	end
 	xmin, xmax = math.min(xmin,xmax), math.max(xmin,xmax)
 	local xstep = (xmax-xmin)/20000
 	-- the output of the x coordinates will be rounded to rndx digits
 	local rndx = math.max(0,math.floor(4.5-log(xmax-xmin)/log(10)))
+	local xerror = abs(xmax-xmin)/(100*10^rndx)
 	ymin, ymax = math.min(ymin,ymax), math.max(ymin,ymax)
 	-- the output of the x coordinates will be rounded to rndy digits
 	local rndy = math.max(0,math.floor(4.5-log(ymax-ymin)/log(10)))
+	local yerror = (ymax-ymin)/(100*10^rndy)
 	-- determine parts of the graph that are inside window
 	local graphs = {}
 	local outside = true -- value is outside window
 	local i = 0
 	local j = 0
-	for x = xmin, xmax, xstep do
+	for n = 0, 20000 do
+		local x = xmin + n/20000*(xmax-xmin)
 		local y = f(x)
-		if y > ymin and y < ymax then -- inside
+		if y >= ymin-yerror and y <= ymax+yerror then -- inside
 			if outside then -- if it was outside before
 				outside = false
 				j = 0
@@ -547,15 +545,12 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 		local d = diffgraph(f,graphs[part],xstep)
 		-- check for type of function (only for the first part)
 		if part == 1 then
-			if is_affine(d,(ymax-ymin)/(10*10^rndy)) then
+			if is_affine(d,yerror) then
 				functiontype = "affine"
-			elseif are_cubic(graphs,(ymax-ymin)/(10*10^rndy)) then
+			elseif are_cubic(graphs,yerror) then
 				functiontype = "cubic"
-			elseif are_cuberoot(graphs,(xmax-xmin)/(10*10^rndx)) then
+			elseif are_cuberoot(graphs,xerror) then
 				functiontype = "cuberoot"
-			elseif is_sin(d,(ymax-ymin)/(10^rndy)) then 
-				-- intentionally less exact
-				functiontype = "sin"
 			end
 		end
 		if functiontype ~= "cuberoot" then -- start with initial point
@@ -608,7 +603,8 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 			d[math.floor(.6*l)][2], d[math.floor(.6*l)][1],
 			d[math.floor(.8*l)][2], d[math.floor(.8*l)][1])
 			-- now recalculate the graph with the inverse function:
-			xstep = (ymax-ymin)/20000 -- inverse redefinition
+			-- we can increase the accuracy
+			xstep = (ymax-ymin)/100000 -- inverse redefinition
 			local finverse = assert(load("local x = ...; return "
 			..a.."*x^3+"..b.."*x^2+"..c.."*x+"..dd))
 			local graphinverse = {}
@@ -616,7 +612,7 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 			for y = ymin, ymax, xstep do
 				local x = finverse(y)
 				if x > xmin and x < xmax -- inside
-				and math.abs(y-f(x)) < (ymax-ymin)/(100*10^rndy) then 
+				and abs(y-f(x)) < (ymax-ymin)/(100*10^rndy) then 
 					graphinverse[i] = {y,x}
 					i = i + 1
 				end
@@ -646,67 +642,27 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 				bezierstring = bezierstring 
 				.. graphtobezier(d,startindex,#d,rndx,rndy,true)
 			end
-		elseif functiontype == "sin" then
-			local extremumindex = 0
-			local inflectionindex = 0
-			for k = 2, #d-1 do
-				if d[k][5] then -- first extremum
-					extremumindex = k
-				elseif d[k][6] then -- first inflection point
-					inflectionindex = k
-				end
-				if extremumindex * inflectionindex > 0 then break end
-			end
-			if extremumindex == 0 and inflectionindex == 0 then
-				bezierstring = bezierstring ..graphtobezierapprox(f,d,
-				1,#d,rndx,rndy,(ymax-ymin)/(5*10^rndy))
-			elseif extremumindex == 0 then
-				bezierstring = bezierstring .. graphtobezierapprox(f,d,
-				1,inflectionindex,rndx,rndy,(ymax-ymin)/(5*10^rndy))
-				.. graphtobezierapprox(f,d,inflectionindex,#d,rndx,rndy,
-				(ymax-ymin)/(5*10^rndy))
-			elseif inflectionindex == 0 then
-				bezierstring = bezierstring .. graphtobezierapprox(f,d,
-				1,extremumindex,rndx,rndy,(ymax-ymin)/(5*10^rndy))
-				.. graphtobezierapprox(f,d,extremumdindex,#d,rndx,rndy,
-				(ymax-ymin)/(5*10^rndy))
-			else -- abbreviation with sin/cos is possible
-				local startindex = math.min(extremumindex,inflectionindex)
-				bezierstring = bezierstring .. graphtobezierapprox(f,d,
-				1,startindex,rndx,rndy,(ymax-ymin)/(5*10^rndy))
-				for k = startindex + 1, #d-1 do
-					if d[k][5] then -- goes to extremum --> sin
-						bezierstring = bezierstring .. " sin (" 
-						.. round(d[k][1],rndx) .. ","
-						.. round(d[k][2],rndy) .. ")"
-						startindex = k
-					elseif d[k][6] then -- goes to inflection --> cos
-						bezierstring = bezierstring .. " cos (" 
-						.. round(d[k][1],rndx) .. ","
-						.. round(d[k][2],rndy) .. ")"
-						startindex = k
-					end
-				end
-				bezierstring = bezierstring .. graphtobezierapprox(f,d,
-				startindex,#d,rndx,rndy,(ymax-ymin)/(5*10^rndy))
-			end
 		else	
 			-- standard case (nothing special)			
 			local startindex = 1
 			for k = 2, #d do
 				if d[k][5] or d[k][6] then -- extrema and inflection points
 					bezierstring = bezierstring .. graphtobezierapprox(
-					f,d,startindex,k,rndx,rndy,(ymax-ymin)/(5*10^rndy))
+					f,d,startindex,k,rndx,rndy,(ymax-ymin)/(0.5*10^rndy))
 					startindex = k
 				end
 			end
 			if startindex ~= #d then -- if no special points inbetween
 				bezierstring = bezierstring .. graphtobezierapprox(f,d,
-				startindex,#d,rndx,rndy,(ymax-ymin)/(5*10^rndy))
+				startindex,#d,rndx,rndy,(ymax-ymin)/(0.5*10^rndy))
 			end
 		end
 	end
-	return bezierstring
+	if isreverse then
+		return reversepath(bezierstring)
+	else
+		return bezierstring
+	end
 end
 
 -- main program --

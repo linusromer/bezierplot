@@ -1,5 +1,5 @@
 DESCRIPTION:
-bezierplot is as well a Lua program as a (Lua)LaTeX package. 
+bezierplot is a Lua program as well as a (Lua)LaTeX package. 
 Given a smooth function, bezierplot returns a smooth bezier path written
 in TikZ notation (which also match METAPOST) that approximates the graph 
 of the function. (For polynomial functions of degree <= 3 and 

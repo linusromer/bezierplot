@@ -1,6 +1,6 @@
 % !TEX program = pdfLaTeX --shell-escape
-\documentclass{article}
-\usepackage{tikz,multicol,bezierplot}
+\documentclass[a4paper]{article}
+\usepackage{tikz,multicol,bezierplot,amsmath,cancel}
 \usepackage[margin=3.5cm,top=1.75cm]{geometry}
 \usepackage{fetamont}
 \title{bezierplot}\author{Linus Romer}
@@ -13,7 +13,7 @@
 		\draw[thick,->] (0,-5) -- (0,5.5) node[left]{$y$}; 
 		\foreach \x in {-4,-3,-2,-1,1,2,3,4} {\draw (\x,1pt) -- (\x,-1pt) node[below]{\tiny \x};}  
       		\foreach \y in {-4,-3,-2,-1,1,2,3,4} {\draw (1pt,\y) -- (-1pt,\y) node[left]{\tiny \y};}   
-      		\draw[color=red,domain=-5:5,range=-5:5,samples=200] plot function{#2};
+      		\draw[color=red,domain=-5:5,range=-5:5,samples=1000] plot function{#2};
 		\draw \bezierplot{#1};
 	\end{tikzpicture}
 	\end{center}
@@ -52,8 +52,9 @@ If you have installed \texttt{bezierplot} by a package manager, the installation
 You will have to call \texttt{bezierplot} as an external program via the option \texttt{--shell-escape} (\texttt{--write18} for MiK\TeX{}). Therefore, \texttt{bezierplot.lua} has to be copied under the name \texttt{bezierplot} to a place, where your OS can find it. Under Linux this usually means copying to \texttt{/usr/local/bin/}, but for Windows this will probably include more steps (like adding to the \texttt{PATH}). Of course, Lua has to be installed as well. As soon as you can call \texttt{bezierplot} from a command line (e.g. by typing \verb|bezierplot "x^2"|), it should also work with other \LaTeX{} engines. 
 \section{Loading}
 The \texttt{bezierplot} package is loaded with \verb|\usepackage{bezierplot}|. There are no loading options for the package.
-\section{Basic Usage}
-A minimal example of Lua\LaTeX{} document could be:
+\section{Usage}
+\begin{multicols}{2}
+\noindent A minimal example of Lua\LaTeX{} document could be:
 \begin{verbatim}
 \documentclass{article}
 \usepackage{tikz,bezierplot}
@@ -61,21 +62,21 @@ A minimal example of Lua\LaTeX{} document could be:
 \tikz \draw \bezierplot{x^2};	
 \end{document}
 \end{verbatim}
-And you will get:
 \begin{center}
-	\tikz \draw \bezierplot{x^2};	
+	\tikz \draw[scale=.7] \bezierplot{x^2};	
 \end{center}
-\section{Advanced Usage}
+\end{multicols}
+\noindent
 The command \verb|\bezierplot| has 4 optional arguments in the sense of
 \begin{center}
 	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX]|
 \end{center}
 The defaults are \verb|XMIN| = \verb|YMIN| $= -5$ and  \verb|XMAX| = \verb|YMAX| $= 5$. 
 \begin{center}
-	\begin{tikzpicture}
+	\begin{tikzpicture}[scale=.7]
 		\draw \bezierplot[-1][2]{x^2};
 		\draw (0,0) node[below]{\verb|\bezierplot[-1][2]{x^2}|};
-		\begin{scope}[shift={(7,0)}]
+		\begin{scope}[shift={(10,0)}]
 		\draw \bezierplot[-1][2][0.5][3]{x^2};
 		\draw (0,0) node[below]{\verb|\bezierplot[-1][2][0.5][3]{x^2}|};
       		\end{scope}
@@ -90,6 +91,15 @@ returns \verb|(-5,-1.5) -- (5,3.5)|, whereas
 	\bezierplot[5][-5]{0.5*x+1}
 \end{verbatim}
 returns the reversed path \verb|(5,3.5) -- (-5,-1.5)|. This is useful, if you want to cycle a path to a closed area:
+\begin{multicols}{2}
+\begin{verbatim}
+\begin{tikzpicture}
+	\fill[black!30] \bezierplot[-1][1]{2-x^2} 
+	-- \bezierplot[1][-1]{x^3-x} -- cycle;
+	\draw \bezierplot[-1.1][1.1]{2-x^2};
+	\draw \bezierplot[-1.1][1.1]{x^3-x};
+\end{tikzpicture}	
+\end{verbatim}
 \begin{center}
 	\begin{tikzpicture}
 		\fill[black!30] \bezierplot[-1][1]{2-x^2} -- \bezierplot[1][-1]{x^3-x} -- cycle;
@@ -97,63 +107,59 @@ returns the reversed path \verb|(5,3.5) -- (-5,-1.5)|. This is useful, if you wa
 		\draw \bezierplot[-1.1][1.1]{x^3-x};
 	\end{tikzpicture}	
 \end{center}
-\subsection{Prerequisites}
-You need to install Lua because \texttt{bezierplot} is a Lua script. The purpose of \texttt{bezierplot} is the use with Ti\emph{k}Z, so an installation of \LaTeX{} or even Lua\TeX{} and Ti\emph{k}Z is recommended.
-\subsection{Running \texttt{bezierplot}}
-Download \texttt{bezierplot} and run it in a terminal, e.g.
+\end{multicols}
+\subsection{Running Raw \texttt{bezierplot}}
+Of course, you can run \verb|bezierplot.lua| in a terminal without using \LaTeX{}, e.g.
 \begin{verbatim}
-lua bezierplot "0.5*x^2-1/(x-2)"
+lua bezierplot.lua "3*x^0.8+2"
 \end{verbatim}
-or if you make it executable
+will return
 \begin{verbatim}
-./bezierplot "0.5*x^2-1/(x-2)"
+(0,2) .. controls (0.03,2.282) and (0.268,3.244) .. (1,5)
 \end{verbatim}
-or after putting \texttt{bezierplot} to an appropriate place even (if you are under Linux I would suggest putting the file in /usr/local/bin):
+You can set the window of the graph as follows:
 \begin{verbatim}
-bezierplot "0.5*x^2-1/(x-2)"
+lua bezierplot.lua "FUNCTION" XMIN XMAX YMIN YMAX
 \end{verbatim}
-For the rest of this document, we will assume that you call \texttt{bezierplot} as described in the last example.
-\section{Examples}
-\subsection{Detailed Example}
-If you want to plot the function $y=1/(x+1)-2$ in a window with $-5\leq x\leq 5$ and $-5\leq y\leq 5$, you may execute
+e.g.
 \begin{verbatim}
-bezierplot "1/(x+1)-2"
+lua bezierplot.lua "FUNCTION" 0 1 -3 2.5
 \end{verbatim}
-and will get
+will set $0\leq x\leq 1$ and $-3\leq y\leq 2.5$. You may also omit the $y$--range, hence
 \begin{verbatim}
-(-5,-2.25) .. controls (-2.12,-2.43) and (-1.59,-2.72) .. (-1.33,-5)
-(-0.86,4.99) .. controls (-0.82,3.01) and (-0.75,1.65) .. (-0.64,0.75) 
-.. controls (-0.53,-0.03) and (-0.38,-0.57) .. (-0.07,-0.92) 
-.. controls (0.5,-1.59) and (1.7,-1.74) .. (5,-1.83)
+lua bezierplot.lua "FUNCTION" 0 1
 \end{verbatim}
-Include it in a LaTeX file, e.g.
-\begin{verbatim}
-\documentclass{article}
-\usepackage{tikz}
-\begin{document}
-\begin{tikzpicture}
-	\draw (-5,-5) grid (5,5);
-	\draw[thick,->] (-5,0) -- (5.5,0) node[below]{$x$};
-	\draw[thick,->] (0,-5) -- (0,5.5) node[left]{$y$};  
-	\draw (-5,-2.25) .. controls (-2.12,-2.43) and (-1.59,-2.72) .. (-1.33,-5)
-	(-0.86,4.99) .. controls (-0.82,3.01) and (-0.75,1.65) .. (-0.64,0.75) 
-	.. controls (-0.53,-0.03) and (-0.38,-0.57) .. (-0.07,-0.92) 
-	.. controls (0.5,-1.59) and (1.7,-1.74) .. (5,-1.83);
-\end{tikzpicture}
-\end{document}
-\end{verbatim}
-and you will get the following picture:
+will set $0\leq x\leq 1$ and leave the default $-5\leq y\leq 5$.
+\subsection{Notation Of Functions}
+The function term given to \verb|bezierplot| must contain at most one variable: $x$ (e.g. \verb|"2.3*(x-1)^2-3"|). You must not omit \verb|*| operators:
 \begin{center}
-	\begin{tikzpicture}[scale=.5]
-		\draw (-5,-5) grid (5,5);
-		\draw[thick,->] (-5,0) -- (5.5,0) node[below]{$x$};
-		\draw[thick,->] (0,-5) -- (0,5.5) node[left]{$y$};  
-		\draw (-5,-2.25) .. controls (-2.12,-2.43) and (-1.59,-2.72) .. (-1.33,-5)(-0.86,4.99) .. controls (-0.82,3.01) and (-0.75,1.65) 
-	.. (-0.64,0.75) .. controls (-0.53,-0.03) and (-0.38,-0.57) .. (-0.07,-0.92) .. controls (0.5,-1.59) and (1.7,-1.74) .. (5,-1.83);
-	\end{tikzpicture}
+	wrong:\quad $\cancel{\texttt{2x(x+1)}}$ \hfil correct:\quad \texttt{2*x*(x+1)}
+\end{center}
+You have two possibilities to write powers: \verb|"x^2"| and \verb|"x**2"| both mean $x^2$.
+
+\medskip
+
+The following functions and constants are possible:
+\begin{center}
+\begin{tabular}{ll}
+	\verb|abs| & absolute value (remember: your function should still be smooth)\\
+	\verb|acos| & $\cos^{-1}$ inverse function of cosine in radians\\
+	\verb|asin| & $\sin^{-1}$ inverse function of sine in radians\\
+	\verb|atan| & $\tan^{-1}$ inverse function of tangent in radians\\
+	\verb|cbrt| & cube root $\sqrt[3]{\quad}$ that works for negative numbers, too\\
+	\verb|cos| & cosine for angles in radians\\
+	\verb|exp| & the exponential function $e^{(\;)}$\\
+	\verb|e| & the euler constant $e=\mathrm{exp}(1)$\\
+	\verb|log| & the natural logarithm $\mathrm{log}_e(\;)$\\
+	\verb|pi| & Archimedes’ constant $\pi\approx 3.14$\\
+	\verb|sgn| & sign function\\
+	\verb|sin| & sine for angles in radians\\
+	\verb|sqrt| & square root $\sqrt{\quad}$\\
+	\verb|tan| & tangent for angles in radians\\
+\end{tabular}
 \end{center}
 \section{Examples of \texttt{bezierplot} in Comparison with Gnuplot}
-The following graphs are drawn with \texttt{bezierplot} (black) and Gnuplot (red). Gnuplot calculated 200 samples per example. The functions are given below the pictures (left: bezierplot, right: Gnuplot).
+The following graphs are drawn with \texttt{bezierplot} (black) and Gnuplot (red). Gnuplot calculated 1000 samples per example. The functions are given below the pictures (left: bezierplot, right: Gnuplot).
 \begin{multicols}{3}
 \graphcomparison{0.32*x-0.7}{0.32*x-0.7}
 \graphcomparison{-x^2+4}{-x**2+4}
@@ -170,59 +176,5 @@ The following graphs are drawn with \texttt{bezierplot} (black) and Gnuplot (red
 \graphcomparison{4-exp(x)}{4-exp(x)}
 \graphcomparison{log(x+4)}{log(x+4)}
 \end{multicols}
-\section{Are the Graphs Produced by bezierplot Exact?}
-The graphs of quadratic and cubic functions and their inverse are exact (up to numeric precision). Sine and cosine functions use the predefined splines from Ti\emph{k}Z (which are very close approximations) if possible. E.g.
-\begin{verbatim}
-bezierplot "cos(x)"
-\end{verbatim}
-outputs
-\begin{verbatim}
-(-5,0.284) .. controls (-4.909,0.196) and (-4.818,0.105) .. (-4.713,0) 
-sin (-3.142,-1) cos (-1.571,0) sin (0,1) cos (1.571,0) sin (3.142,-1) 
-cos (4.713,0) .. controls (4.818,0.105) and (4.909,0.196) .. (5,0.284)
-\end{verbatim}
-\section{Options}
-You can set the window of the graph as follows:
-\begin{verbatim}
-bezierplot "FUNCTION" XMIN XMAX YMIN YMAX
-\end{verbatim}
-e.g.
-\begin{verbatim}
-bezierplot "FUNCTION" 0 1 -3 2.5
-\end{verbatim}
-will set $0\leq x\leq 1$ and $-3\leq y\leq 2.5$. You may also omit the $y$--range, hence
-\begin{verbatim}
-bezierplot "FUNCTION" 0 1
-\end{verbatim}
-will set $0\leq x\leq 1$ and leave the default $-5\leq y\leq 5$.
-\section{Daily Use with \LaTeX{} and Lua\LaTeX}
-Supposing your OS finds \texttt{bezierplot} automatically (e.g. because it is in \verb|/usr/local/bin|), you can set up your \LaTeX{} file like this:
-\begin{verbatim}
-\documentclass{article}
-\usepackage{tikz}
-\makeatletter\let\evaluatedinput\@@input\makeatother
-\providecommand{\bezierplot}[1]{\evaluatedinput|"bezierplot '#1'" }
-\begin{document}
-\tikz \draw \bezierplot{x^2};
-\end{document}
-\end{verbatim}
-If you run \LaTeX{} with enabled shell-escape (option \verb|--shell-escape| for \TeX{}Live, option \verb|--write18| for MiK\TeX{}), you will receive automatically the following picture:
-\begin{center}
-	\begin{tikzpicture}[scale=.5]
-		\draw \bezierplot{sqrt(x)};
-	\end{tikzpicture}
-\end{center}
-Things get even better with Lua\LaTeX{}, because it can call Lua directly and do not need shell-escape enabled:
-\begin{verbatim}
-\documentclass{article}
-\usepackage{tikz,xparse}
-\directlua{require("bezierplot")}
-\DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} m}{%
-\directlua{tex.sprint(bezierplot("#5",#1,#2,#3,#4))}}
-\providecommand\bezierplot{\romannumeral`\^^@\xbezierplot}
-\begin{document}
-\tikz \draw \bezierplot{x^2};
-\end{document}
-\end{verbatim}
-The above example also extends the \verb|\bezierplot| command in such way, that you may set the bounds as options: E.g. \verb|\bezierplot[0][1][2]{x^2}| will set $0\leq x\leq 1$ and $2\leq y \leq 5$.
+
 \end{document}

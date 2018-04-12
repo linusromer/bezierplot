@@ -41,16 +41,16 @@ The following example will show a comparison of \textsc{gnuplot} with \verb|bezi
 \end{center}
 \textsc{gnuplot} used 51 samples (no smoothing) and is still quite inexact at the beginning, whereas \verb|bezierplot| uses 4 points only and is exact!
 \section{Installation}
-As \texttt{bezierplot} is written in Lua, the installation depends if you are using Lua\LaTeX{} or another \LaTeX{} engine.
+As \texttt{bezierplot} is written in Lua, the installation depends whether you are using Lua\LaTeX{} or another \LaTeX{} engine.
 \subsection{Installation For Lua\LaTeX{}}
-If you have installed \texttt{bezierplot} by a package manager, the installation is already complete. The manual installation \texttt{bezierplot} is done in 2 steps:
+If you have installed \texttt{bezierplot} by a package manager, the installation is already complete. The manual installation of \texttt{bezierplot} is done in 2 steps:
 \begin{itemize}
 	\item copy the files \texttt{bezierplot.lua} and \texttt{bezierplot.sty} somewhere in your \texttt{texmf} tree (e.g. to \verb|~/texmf/tex/lualatex/bezierplot/bezierplot.sty| and\\
 	\verb|~/texmf/scripts/bezierplot/bezierplot.lua|)
 	\item update the ls-R databases by running \texttt{mktexlsr}
 \end{itemize}
 \subsection{Additional Installation Steps For Other \LaTeX{} Engines}
-You will have to call \texttt{bezierplot} as an external program via the option \texttt{--shell-escape} (\texttt{--write18} for MiK\TeX{}). Therefore, \texttt{bezierplot.lua} has to be copied under the name \texttt{bezierplot} to a place, where your OS can find it. Under Linux this usually means copying to \texttt{/usr/local/bin/}, but for Windows this will probably include more steps (like adding to the \texttt{PATH}). Of course, Lua has to be installed as well. As soon as you can call \texttt{bezierplot} from a command line (e.g. by typing \verb|bezierplot "x^2"|), it should also work with other \LaTeX{} engines. 
+You will have to call \texttt{bezierplot} as an external program via the option \texttt{--shell-escape} (\texttt{--write18} for MiK\TeX{}). Therefore, \texttt{bezierplot.lua} has to be copied with the name \texttt{bezierplot} to a place, where your OS can find it. Under Linux this usually means copying to the directory \texttt{/usr/local/bin/}, but for Windows this will probably include more steps (like adding to the \texttt{PATH}). Of course, Lua has to be installed as well. As soon as you can call \texttt{bezierplot} from a command line (e.g. by typing \verb|bezierplot "x^2"|), it should also work with other \LaTeX{} engines. 
 \section{Loading}
 The \texttt{bezierplot} package is loaded with \verb|\usepackage{bezierplot}|. There are no loading options for the package.
 \section{Usage}
@@ -70,7 +70,7 @@ The \texttt{bezierplot} package is loaded with \verb|\usepackage{bezierplot}|. T
 \noindent
 The command \verb|\bezierplot| has 4 optional arguments in the sense of
 \begin{center}
-	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX]|
+	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX]{FUNCTION}|
 \end{center}
 The defaults are \verb|XMIN| = \verb|YMIN| $= -5$ and  \verb|XMAX| = \verb|YMAX| $= 5$. 
 \begin{center}
@@ -132,7 +132,7 @@ lua bezierplot.lua "FUNCTION" 0 1
 \end{verbatim}
 will set $0\leq x\leq 1$ and leave the default $-5\leq y\leq 5$.
 \subsection{Notation Of Functions}
-The function term given to \verb|bezierplot| must contain at most one variable: $x$ (e.g. \verb|"2.3*(x-1)^2-3"|). You must not omit \verb|*| operators:
+The function term given to \verb|bezierplot| must contain at most one variable: $x$. E.g. \verb|"2.3*(x-1)^2-3"|. You must not omit \verb|*| operators:
 \begin{center}
 	wrong:\quad $\cancel{\texttt{2x(x+1)}}$ \hfil correct:\quad \texttt{2*x*(x+1)}
 \end{center}

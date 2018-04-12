@@ -2,7 +2,7 @@ DESCRIPTION:
 bezierplot is as well a Lua program as a (Lua)LaTeX package. 
 Given a smooth function, bezierplot returns a smooth bezier path written
 in TikZ notation (which also match METAPOST) that approximates the graph 
-of the function. (For polynomial functions of degree $\leq 3$ and 
+of the function. (For polynomial functions of degree <= 3 and 
 inverses of them, the approximation is exact.) It finds special points 
 such as extreme points and inflection points and reduces the number of 
 used points.

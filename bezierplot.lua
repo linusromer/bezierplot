@@ -1,5 +1,5 @@
 #!/usr/bin/env lua
--- Linus Romer, published 2018 under GPLv3
+-- Linus Romer, published 2018 under LPPL Version 1.3c
 abs = math.abs
 acos = math.acos
 asin = math.asin

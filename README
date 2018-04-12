@@ -1,0 +1,16 @@
+DESCRIPTION:
+bezierplot is as well a Lua program as a (Lua)LaTeX package. 
+Given a smooth function, bezierplot returns a smooth bezier path written
+in TikZ notation (which also match METAPOST) that approximates the graph 
+of the function. (For polynomial functions of degree $\leq 3$ and 
+inverses of them, the approximation is exact.) It finds special points 
+such as extreme points and inflection points and reduces the number of 
+used points.
+The package and the program are distributed on CTAN under the terms of 
+the LaTeX Project Public License (LPPL) version 1.3c.
+
+Copyright (c) 2018 Linus Romer
+
+Please write to 
+linus dot romer at gmx dot ch
+to submit bug reports, request new features, etc.

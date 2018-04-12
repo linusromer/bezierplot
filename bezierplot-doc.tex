@@ -23,7 +23,7 @@
 \section{Introduction}
 \texttt{bezierplot} is as well a Lua program as a (Lua)\LaTeX{} package. This document describes both.
 
-Given a smooth function, \texttt{bezierplot} returns a smooth bezier path written in Ti\emph{k}Z/\MP{} notation that approximates the graph of the function. (For polynomial functions of degree $\leq 3$ and inverses of them, the approximation is exact.) It finds special points such as extreme points and inflection points and reduces the number of used points.
+Given a smooth function, \texttt{bezierplot} returns a smooth bezier path written in Ti\emph{k}Z notation (which also matches \MP{}) that approximates the graph of the function. For polynomial functions of degree $\leq 3$ and inverses of them, the approximation is exact. \texttt{bezierplot} finds special graph points such as extreme points and inflection points and reduces the number of used points.
 
 The following example will show a comparison of \textsc{gnuplot} with \verb|bezierplot| for the function $y=\sqrt{x}$ for $0\leq x \leq 5$:
 \begin{center}
@@ -45,7 +45,8 @@ As \texttt{bezierplot} is written in Lua, the installation depends if you are us
 \subsection{Installation For Lua\LaTeX{}}
 If you have installed \texttt{bezierplot} by a package manager, the installation is already complete. The manual installation \texttt{bezierplot} is done in 2 steps:
 \begin{itemize}
-	\item copy the files \texttt{bezierplot.lua} and \texttt{bezierplot.sty} somewhere in your \texttt{texmf} tree (e.g. \texttt{~/texmf/})
+	\item copy the files \texttt{bezierplot.lua} and \texttt{bezierplot.sty} somewhere in your \texttt{texmf} tree (e.g. to \verb|~/texmf/tex/lualatex/bezierplot/bezierplot.sty| and\\
+	\verb|~/texmf/scripts/bezierplot/bezierplot.lua|)
 	\item update the ls-R databases by running \texttt{mktexlsr}
 \end{itemize}
 \subsection{Additional Installation Steps For Other \LaTeX{} Engines}
@@ -158,8 +159,8 @@ The following functions and constants are possible:
 	\verb|tan| & tangent for angles in radians\\
 \end{tabular}
 \end{center}
-\section{Examples of \texttt{bezierplot} in Comparison with Gnuplot}
-The following graphs are drawn with \texttt{bezierplot} (black) and Gnuplot (red). Gnuplot calculated 1000 samples per example. The functions are given below the pictures (left: bezierplot, right: Gnuplot).
+\section{Examples of \texttt{bezierplot} in Comparison with \textsc{gnuplot}}
+The following graphs are drawn with \texttt{bezierplot} (black) and \textsc{gnuplot} (red). \textsc{gnuplot} used 1000 samples per example. The functions are given below the pictures (left: bezierplot, right: \textsc{gnuplot}).
 \begin{multicols}{3}
 \graphcomparison{0.32*x-0.7}{0.32*x-0.7}
 \graphcomparison{-x^2+4}{-x**2+4}

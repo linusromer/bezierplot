@@ -1,5 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
+-- version 1.1 2018-04-25
 abs = math.abs
 acos = math.acos
 asin = math.asin
@@ -32,7 +33,7 @@ function sgn(x)
 	end
 end
 
-function round(num, decimals)
+local function round(num, decimals)
 	local result = tonumber(string.format("%." .. (decimals or 0) .. "f", num))
 	if abs(result) == 0 then
 		return 0
@@ -44,7 +45,7 @@ end
 -- 5-stencil method
 -- return from a graph from f in the form {{x,y},...}
 -- the derivatives in form {{x,y,dy/dx,ddy/ddx},...}
-function diffgraph(func,graph,h)
+local function diffgraph(func,graph,h)
 	local dgraph = {}	
 	local yh = func(graph[1][1]-h)
 	local yhh = func(graph[1][1]-2*h)
@@ -145,7 +146,7 @@ end
 -- fits the graph g (up to maxerror) after filling in
 -- the parameters a, b, c, d
 -- if the graph is inverted, then isinverse has to be set true
-function do_parameters_fit(a,b,c,d,funcstring,funcgraph,maxerror,isinverse)
+local function do_parameters_fit(a,b,c,d,funcstring,funcgraph,maxerror,isinverse)
 	local funcx = string.gsub(funcstring, "a", a)
 	local funcx = string.gsub(funcx, "b", b)
 	local funcx = string.gsub(funcx, "c", c)
@@ -168,7 +169,7 @@ function do_parameters_fit(a,b,c,d,funcstring,funcgraph,maxerror,isinverse)
 end
 
 -- f(x)=a*x^3+b*x+c
-function parameters_cubic(xp,yp,xq,yq,xr,yr,xs,ys)
+local function parameters_cubic(xp,yp,xq,yq,xr,yr,xs,ys)
 	local a = (((xp^2 * xq) * yr) - ((xp^2 * xq) * ys) 
 	- ((xp^2 * xr) * yq) + ((xp^2 * xr) * ys) + ((xp^2 * xs) * yq)
 	- ((xp^2 * xs) * yr) - ((xp * xq^2) * yr) + ((xp * xq^2) * ys) 
@@ -265,7 +266,7 @@ function parameters_cubic(xp,yp,xq,yq,xr,yr,xs,ys)
 end
 
 -- f(x)=a*x+b
-function parameters_affine(xp,yp,xq,yq)
+local function parameters_affine(xp,yp,xq,yq)
 	local a = (yp - yq) / (xp - xq)
 	local b = ((xp * yq) - (xq * yp)) / (xp - xq)
 	return a, b
@@ -273,7 +274,7 @@ end
 
 -- returns true iff the function is of type f(x)=a*x^3+b*x^2+c*x+d
 -- a, b, c, d being real numbers
-function is_cubic(graph,maxerror)
+local function is_cubic(graph,maxerror)
 	local l = #graph
 	local a, b, c, d = parameters_cubic(graph[1][1],graph[1][2],
 	graph[math.floor(l/3)][1],graph[math.floor(l/3)][2],
@@ -287,7 +288,7 @@ end
 -- a, b, c, d being real numbers
 -- this takes several graph parts
 -- the idea is to have a possibility to avoid tan(x)
-function are_cubic(graphs,maxerror)
+local function are_cubic(graphs,maxerror)
 	if is_cubic(graphs[1],maxerror) then
 		if #graphs < 2 then
 			return true
@@ -309,7 +310,7 @@ end
 -- returns true iff the inverse function is of type 
 -- f(x)=a*x^3+b*x^2+c*x+d
 -- a, b, c, d being real numbers
-function is_cuberoot(graph,maxerror)
+local function is_cuberoot(graph,maxerror)
 	local l = #graph
 	local a, b, c, d = parameters_cubic(graph[1][2],graph[1][1],
 	graph[math.floor(l/3)][2],graph[math.floor(l/3)][1],
@@ -323,7 +324,7 @@ end
 -- a, b, c, d being real numbers
 -- this takes several graph parts
 -- the idea is to have a possibility to avoid tan(x)
-function are_cuberoot(graphs,maxerror)
+local function are_cuberoot(graphs,maxerror)
 	if is_cuberoot(graphs[1],maxerror) then
 		if #graphs < 2 then
 			return true
@@ -344,7 +345,7 @@ end
 
 -- returns true iff function is of type f(x)=a*x+b
 -- a, b being real numbers
-function is_affine(graph,maxerror)
+local function is_affine(graph,maxerror)
 	l = #graph
 	local a, b = parameters_affine(graph[1][1],graph[1][2],
 	graph[l][1],graph[l][2])
@@ -356,7 +357,7 @@ end
 -- p.. control q and r .. s
 -- with the graph g from index starti to endi
 -- (looking at the points at roughly t=.33 and t=.67)
-function squareerror(f,g,starti,endi,qx,qy,rx,ry)
+local function squareerror(f,g,starti,endi,qx,qy,rx,ry)
 	local result = 0
 	for t = .33, .7, .34 do
 		x = (1-t)^3*g[starti][1]+3*t*(1-t)^2*qx+3*t^2*(1-t)*rx+t^3*g[endi][1]
@@ -366,13 +367,114 @@ function squareerror(f,g,starti,endi,qx,qy,rx,ry)
 	return result
 end
 
-function pointstobezier(qx,qy,rx,ry,sx,sy,rndx,rndy)
-	return " .. controls (" .. round(qx,rndx) .. "," 
-	.. round(qy,rndy) ..") and ("
-	.. round(rx,rndx) .. "," 
-	.. round(ry,rndy) .. ") .. (" 
-	.. round(sx,rndx) .. "," 
-	.. round(sy,rndy)..")"
+-- converts a table with bezier point information
+-- to a string with rounded values 
+-- the path is reversed, if rev is true
+-- e.g. if b = {{0,1},{2,3,4,5,6,7},{8,9,10,11,12,13}}
+-- then 
+-- (0,1) .. controls (2,3) and (4,5) .. (6,7) .. controls 
+-- (8,9) and (10,11) .. (12,13)
+-- will be returned
+-- the notation "pgfplots" will change the notation to
+-- 0  1
+-- 6  7
+-- 2  3
+-- 4  5
+--
+-- 6  7
+-- 12 13
+-- 8  9
+-- 10 11
+-- As pgfplots does not connect the bezier segments
+-- reverse paths are not implemented 
+local function beziertabletostring(b,rndx,rndy,rev,notation)
+	local bezierstring = ""
+	if #b == 2 and #b[2] == 2 then -- straight line
+		if rev then
+			bezierstring = "(" .. round(b[2][1],rndx) .. "," 
+				.. round(b[2][2],rndy) ..")"
+				.. " -- (" .. round(b[1][1],rndx) .. "," 
+				.. round(b[1][2],rndy) ..")"
+		else
+			if notation == "pgfplots" then
+				bezierstring = round(b[1][1],rndx) .. "  " 
+					.. round(b[1][2],rndy) .. "\n"
+					.. round(b[2][1],rndx) .. "  " 
+					.. round(b[2][2],rndy) .. "\n"
+					.. round(b[1][1],rndx) .. "  " 
+					.. round(b[1][2],rndy) .. "\n"
+					.. round(b[2][1],rndx) .. "  " 
+					.. round(b[2][2],rndy)
+			else -- notation = tikz
+				bezierstring = "(" .. round(b[1][1],rndx) .. "," 
+					.. round(b[1][2],rndy) ..")"
+					.. " -- (" .. round(b[2][1],rndx) .. "," 
+					.. round(b[2][2],rndy) ..")"
+			end	
+		end
+	else
+		if rev then
+			bezierstring = "(" .. round(b[#b][#b[#b]],rndx) .. "," 
+			.. round(b[#b][#b[#b]-1],rndy) ..")" -- initial point
+			for i = #b, 2, -1 do
+				if #b[i] >= 6 then -- cubic bezier spline
+					bezierstring = bezierstring .. " .. controls (" 
+					.. round(b[i][3],rndx) .. "," 
+					.. round(b[i][4],rndy) ..") and ("
+					.. round(b[i][1],rndx) .. "," 
+					.. round(b[i][2],rndy) .. ") .. (" 
+					.. round(b[i-1][#b[i-1]-1],rndx) .. "," 
+					.. round(b[i-1][#b[i-1]],rndy)..")"
+				else
+					bezierstring = bezierstring .. " (" 
+					.. round(b[i-1][#b[i-1]-1],rndx) .. "," 
+					.. round(b[i-1][#b[i-1]],rndy) ..")"
+				end
+			end
+		else
+			if notation == "pgfplots" then
+				for i = 1, #b-1 do
+					if #b[i+1] >= 6 then -- cubic bezier spline
+						bezierstring = bezierstring 
+						.. round(b[i][#b[i]-1],rndx) .. "  " 
+						.. round(b[i][#b[i]],rndy) .. "\n" 
+						.. round(b[i+1][5],rndx) .. "  " 
+						.. round(b[i+1][6],rndy) .. "\n" 
+						.. round(b[i+1][1],rndx) .. "  " 
+						.. round(b[i+1][2],rndy) .. "\n" 
+						.. round(b[i+1][3],rndx) .. "  " 
+						.. round(b[i+1][4],rndy) .. "\n\n" 
+					end
+				end
+			else -- notation = tikz
+				bezierstring = "(" .. round(b[1][1],rndx) .. "," 
+				.. round(b[1][2],rndy) ..")" -- initial point
+				for i = 2, #b do
+					if #b[i] >= 6 then -- cubic bezier spline
+						bezierstring = bezierstring .. " .. controls (" 
+						.. round(b[i][1],rndx) .. "," 
+						.. round(b[i][2],rndy) ..") and ("
+						.. round(b[i][3],rndx) .. "," 
+						.. round(b[i][4],rndy) .. ") .. (" 
+						.. round(b[i][5],rndx) .. "," 
+						.. round(b[i][6],rndy)..")"
+					else
+						bezierstring = bezierstring .. " (" 
+						.. round(b[i][1],rndx) .. "," 
+						.. round(b[i][2],rndy) ..")"
+					end
+				end
+			end
+		end
+	end
+	if notation == "pgfplots" then
+		for i =1, 2 do
+			if bezierstring:sub(#bezierstring,#bezierstring) == "\n" then
+				bezierstring = bezierstring:sub(1, -2)
+			end
+		end
+	end
+	return bezierstring
 end
 
 -- take end points of a graph g of the function f
@@ -380,7 +482,7 @@ end
 -- without extrema or inflection points inbetween 
 -- and try to approximate it with a cubic bezier curve
 -- (round to rndx and rndy when printing)
-function graphtobezierapprox(f,g,starti,endi,rndx,rndy,maxerror)
+local function graphtobezierapprox(f,g,starti,endi,maxerror)
 	local px = g[starti][1]
 	local py = g[starti][2]
 	local dp = g[starti][3]
@@ -426,7 +528,7 @@ function graphtobezierapprox(f,g,starti,endi,rndx,rndy,maxerror)
 		end
 	end
 	if err <= maxerror then
-		return pointstobezier(qx,qy,rx,ry,sx,sy,rndx,rndy)
+		return {qx,qy,rx,ry,sx,sy}
 	else
 		-- search for an intermediate point where the graph has the same
 		-- slope as the line from the start point to the end point:
@@ -439,14 +541,18 @@ function graphtobezierapprox(f,g,starti,endi,rndx,rndy,maxerror)
 				interindex = i
 			end
 		end
-		return graphtobezierapprox(f,g,starti,interindex,rndx,rndy,maxerror)
-		.. graphtobezierapprox(f,g,interindex,endi,rndx,rndy,maxerror)
+		local left = graphtobezierapprox(f,g,starti,interindex,maxerror)
+		local right = graphtobezierapprox(f,g,interindex,endi,maxerror)
+		for i=1, #right do
+			left[#left+1] = right[i]
+		end
+		return left
 	end
 end
 
 -- like above but exact for quadratic and cubic (if not inverse)
 -- resp. exact for squareroot and cuberoot (if inverse)
-function graphtobezier(g,starti,endi,rndx,rndy,isinverse)
+local function graphtobezier(g,starti,endi,isinverse)
 	local px = g[starti][1]
 	local py = g[starti][2]
 	local dp = g[starti][3]
@@ -458,48 +564,24 @@ function graphtobezier(g,starti,endi,rndx,rndy,isinverse)
 	local qy = py+(qx-px)*dp
 	local ry = sy+(rx-sx)*ds
 	if isinverse then
-		return pointstobezier(qy,qx,ry,rx,sy,sx,rndy,rndx)
+		return {qy,qx,ry,rx,sy,sx}
 	else
-		return pointstobezier(qx,qy,rx,ry,sx,sy,rndx,rndy)
+		return {qx,qy,rx,ry,sx,sy}
 	end
 end
 
--- reverses a path p e.g. when p = "(0,1) -- (2,3)"
--- it returns "(2,3) -- (0,1)"
--- or when p = "(0,1) .. controls (2,3) and (4,5) .. (6,7)"
--- it returns "(6,7) .. controls (4,5) and (2,3) .. (0,1)"
-function reversepath(p)
-	local r = "" -- will become the reverse path
-	local temppoint  ="" -- will store temporal points like "(0,1)"
-	local tempbetween = "" -- will store things like " .. controls "
-	for i = 1, #p do
-		local c = string.sub(p,i,i)
-		if c == "(" then
-			if tempbetween == " .. " then
-				r = " .. controls " .. r
-			elseif tempbetween == " .. controls " then
-				r = " .. " .. r
-			else
-				r = tempbetween .. r
-			end
-			tempbetween = ""
-			temppoint = "("
-		elseif c == ")" then
-			r = temppoint .. ")" .. r
-			temppoint = ""
-		else
-			if temppoint == "" then -- not reading a point
-				tempbetween = tempbetween .. c
-			else
-				temppoint = temppoint .. c
-			end
+-- just for debugging:
+local function printtable(t)
+	for i = 1,#t do
+		for j = 1, #t[i] do
+			io.write(t[i][j].." ")
 		end
+		io.write("\n")
 	end
-	return r
 end
 
 -- main function
-function bezierplot(functionstring,xmin,xmax,ymin,ymax)
+function bezierplot(functionstring,xmin,xmax,ymin,ymax,notation)
 	local fstringreplaced = string.gsub(functionstring, "%*%*", "^")
 	local f = assert(load("local x = ...; return " .. fstringreplaced)) 
 	local isreverse = false
@@ -538,7 +620,12 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 	end
 
 	local functiontype = "unknown"
-	local bezierstring = ""
+	local bezierpoints = {}
+	-- the bezier path (0,1) .. controls 
+	-- (2,3) and (4,5) .. (6,7) .. controls 
+	-- (8,9) and (10,11) .. (12,13)
+	-- will be stored as
+	-- bezierpoints={{0,1},{2,3,4,5,6,7},{8,9,10,11,12,13}}
 
 	-- go through the connected parts
 	for part = 1, #graphs do 
@@ -554,20 +641,20 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 			end
 		end
 		if functiontype ~= "cuberoot" then -- start with initial point
-			bezierstring = bezierstring .. "(" .. round(d[1][1],rndx) 
-			.. "," 	.. round(d[1][2],rndy) .. ")"
+			bezierpoints[#bezierpoints+1] = {round(d[1][1],rndx),
+			round(d[1][2],rndy)}
 		end
 		if functiontype == "affine" then 
-			bezierstring = bezierstring .. " -- (" .. round(d[#d][1],
-			rndx) .. "," .. round(d[#d][2],rndy) ..")"
+			bezierpoints[#bezierpoints+1] = {round(d[#d][1],rndx),
+			round(d[#d][2],rndy)}
 		elseif functiontype == "cubic" then 
 			local startindex = 1
 			local extremainbetween = false
 			for k = 2, #d do
 				if d[k][5] then -- extrema 
 					extremainbetween = true
-					bezierstring = bezierstring 
-					.. graphtobezier(d,startindex,k,rndx,rndy,false)
+					bezierpoints[#bezierpoints+1] = graphtobezier(d,
+					startindex,k,false)
 					startindex = k
 				end
 			end
@@ -583,16 +670,16 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 						local ry = d[#d][2]+(rx-d[#d][1])*d[#d][3]
 						if math.max(qy,ry) > ymax 
 						or math.min(qy,ry) < ymin then
-							bezierstring = bezierstring ..graphtobezier(
-							d,startindex,k,rndx,rndy,false)
+							bezierpoints[#bezierpoints+1] = graphtobezier(
+							d,startindex,k,false)
 							startindex = k
 						end
 					end
 				end
 			end
 			if startindex ~= #d then -- if no special points inbetween
-				bezierstring = bezierstring 
-				.. graphtobezier(d,startindex,#d,rndx,rndy,false)
+				bezierpoints[#bezierpoints+1] = graphtobezier(d,
+				startindex,#d,false)
 			end
 		elseif functiontype == "cuberoot" then 
 			-- we determine a, b, c, d and then
@@ -618,8 +705,7 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 				end
 			end
 			d = diffgraph(finverse,graphinverse,xstep)
-			bezierstring = bezierstring .. "(" .. round(d[1][2],rndy) 
-			.. "," .. round(d[1][1],rndx) .. ")" -- initial point
+			bezierpoints[#bezierpoints+1] = {d[1][2],d[1][1]} -- initial point
 			local startindex = 1
 			for k = 2, #d do
 				if d[k][6] then -- inflection point
@@ -632,37 +718,33 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax)
 					local ry = d[#d][2]+(rx-d[#d][1])*d[#d][3]
 					if math.max(qy,ry) > xmax 
 					or math.min(qy,ry) < xmin then
-						bezierstring = bezierstring..graphtobezier(
-						d,startindex,k,rndx,rndy,true)
+						bezierpoints[#bezierpoints+1] = graphtobezier(
+						d,startindex,k,true)
 						startindex = k
 					end
 				end
 			end
 			if startindex ~= #d then -- if no special points inbetween
-				bezierstring = bezierstring 
-				.. graphtobezier(d,startindex,#d,rndx,rndy,true)
+				bezierpoints[#bezierpoints+1] = graphtobezier(d,
+				startindex,#d,true)
 			end
 		else	
 			-- standard case (nothing special)			
 			local startindex = 1
 			for k = 2, #d do
 				if d[k][5] or d[k][6] then -- extrema and inflection points
-					bezierstring = bezierstring .. graphtobezierapprox(
-					f,d,startindex,k,rndx,rndy,(ymax-ymin)/(0.5*10^rndy))
+					bezierpoints[#bezierpoints+1] = graphtobezierapprox(
+					f,d,startindex,k,(ymax-ymin)/(0.5*10^rndy))
 					startindex = k
 				end
 			end
 			if startindex ~= #d then -- if no special points inbetween
-				bezierstring = bezierstring .. graphtobezierapprox(f,d,
-				startindex,#d,rndx,rndy,(ymax-ymin)/(0.5*10^rndy))
+				bezierpoints[#bezierpoints+1] = graphtobezierapprox(f,d,
+				startindex,#d,(ymax-ymin)/(0.5*10^rndy))
 			end
 		end
 	end
-	if isreverse then
-		return reversepath(bezierstring)
-	else
-		return bezierstring
-	end
+	return beziertabletostring(bezierpoints,rndx,rndy,isreverse,notation)
 end
 
 -- main program --
@@ -689,7 +771,12 @@ if not pcall(debug.getlocal, 4, 1) then
 				ymax = arg[5]
 			end
 		end
-		print(bezierplot(arg[1],xmin,xmax,ymin,ymax))
+		if #arg >= 6 then 
+			notation = arg[6] 
+		else
+			notation = "tikz"
+		end
+		print(bezierplot(arg[1],xmin,xmax,ymin,ymax,notation))
 	end
 end
 

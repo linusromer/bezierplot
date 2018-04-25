@@ -1,16 +1,16 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{bezierplot}[2018/04/10 bezierplot]
+\ProvidesPackage{bezierplot}[2018/04/25 bezierplot]
 \RequirePackage{xparse}
 \RequirePackage{iftex}
 \ifLuaTeX
  \directlua{require("bezierplot")}
- \DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} m}{%
-  \directlua{tex.sprint(bezierplot("#5",#1,#2,#3,#4))}
+ \DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} O{tikz} m}{%
+  \directlua{tex.sprint(bezierplot("#6",#1,#2,#3,#4,#5))}
   }
 \else
  \let\xpandblinpt\@@input
- \DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} m}{%
-  \xpandblinpt|"bezierplot '#5' #1 #2 #3 #4"
+ \DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} O{tikz} m}{%
+  \xpandblinpt|"bezierplot '#6' #1 #2 #3 #4 #5"
  }
 \fi
 \providecommand\bezierplot{\romannumeral`\^^@\xbezierplot}

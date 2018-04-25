@@ -5,7 +5,7 @@
 \ifLuaTeX
  \directlua{require("bezierplot")}
  \DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} O{tikz} m}{%
-  \directlua{tex.sprint(bezierplot("#6",#1,#2,#3,#4,#5))}
+  \directlua{tex.sprint(bezierplot("#6",#1,#2,#3,#4,"#5"))}
   }
 \else
  \let\xpandblinpt\@@input

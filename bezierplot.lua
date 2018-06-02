@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
--- version 1.1 2018-04-25
+-- version 1.1 2018-06-02
 abs = math.abs
 acos = math.acos
 asin = math.asin
@@ -113,28 +113,22 @@ local function diffgraph(func,graph,h)
 		if not (dgraph[i+1][1] - dgraph[i][1] > 1.5*h) then
 			-- check for dy/dx == 0 
 			-- if not already determined as near dy/dx=0
-			if not dgraph[i][5] then 
-				if dgraph[i][3] == 0 then
+			if (not dgraph[i][5]) and (abs(dgraph[i][3]*dgraph[i+1][3]) 
+				~= dgraph[i][3]*dgraph[i+1][3]) then -- this must be near
+				if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
 					dgraph[i][5] = true
-				elseif abs(dgraph[i][3]*dgraph[i+1][3]) 
-				~= dgraph[i][3]*dgraph[i+1][3] then -- this must be near
-					if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
-						dgraph[i][5] = true
-					else
-						dgraph[i+1][5] = true
-					end
+				else
+					dgraph[i+1][5] = true
 				end
 			end
 			-- check for ddy/ddx == 0 
 			-- if not already determined as near ddy/ddx=0
-			if not dgraph[i][6] then 
-				if abs(dgraph[i][4]*dgraph[i+1][4]) 
-				~= dgraph[i][4]*dgraph[i+1][4] then -- this must be near
-					if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
-						dgraph[i][6] = true
-					else
-						dgraph[i+1][6] = true
-					end
+			if (not dgraph[i][6]) and (abs(dgraph[i][4]*dgraph[i+1][4]) 
+				~= dgraph[i][4]*dgraph[i+1][4]) then -- this must be near
+				if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
+					dgraph[i][6] = true
+				else
+					dgraph[i+1][6] = true
 				end
 			end
 		end
@@ -147,6 +141,10 @@ end
 -- the parameters a, b, c, d
 -- if the graph is inverted, then isinverse has to be set true
 local function do_parameters_fit(a,b,c,d,funcstring,funcgraph,maxerror,isinverse)
+	if not (a > -math.huge and a < math.huge and b > -math.huge and b < math.huge  and
+	c > -math.huge and c < math.huge and d > -math.huge and d < math.huge) then
+		return false
+	end
 	local funcx = string.gsub(funcstring, "a", a)
 	local funcx = string.gsub(funcx, "b", b)
 	local funcx = string.gsub(funcx, "c", c)
@@ -376,15 +374,7 @@ end
 -- (8,9) and (10,11) .. (12,13)
 -- will be returned
 -- the notation "pgfplots" will change the notation to
--- 0  1
--- 6  7
--- 2  3
--- 4  5
---
--- 6  7
--- 12 13
--- 8  9
--- 10 11
+-- 0  1 \\ 6  7 \\ 2  3 \\ 4  5 \\ \\ 6  7 \\ 12 13 \\ 8  9 \\ 10 11 \\
 -- As pgfplots does not connect the bezier segments
 -- reverse paths are not implemented 
 local function beziertabletostring(b,rndx,rndy,rev,notation)
@@ -398,11 +388,11 @@ local function beziertabletostring(b,rndx,rndy,rev,notation)
 		else
 			if notation == "pgfplots" then
 				bezierstring = round(b[1][1],rndx) .. "  " 
-					.. round(b[1][2],rndy) .. "\n"
+					.. round(b[1][2],rndy) .. "\\\\"
 					.. round(b[2][1],rndx) .. "  " 
-					.. round(b[2][2],rndy) .. "\n"
+					.. round(b[2][2],rndy) .. "\\\\"
 					.. round(b[1][1],rndx) .. "  " 
-					.. round(b[1][2],rndy) .. "\n"
+					.. round(b[1][2],rndy) .. "\\\\"
 					.. round(b[2][1],rndx) .. "  " 
 					.. round(b[2][2],rndy)
 			else -- notation = tikz
@@ -437,13 +427,13 @@ local function beziertabletostring(b,rndx,rndy,rev,notation)
 					if #b[i+1] >= 6 then -- cubic bezier spline
 						bezierstring = bezierstring 
 						.. round(b[i][#b[i]-1],rndx) .. "  " 
-						.. round(b[i][#b[i]],rndy) .. "\n" 
+						.. round(b[i][#b[i]],rndy) .. " \\\\ " 
 						.. round(b[i+1][5],rndx) .. "  " 
-						.. round(b[i+1][6],rndy) .. "\n" 
+						.. round(b[i+1][6],rndy) .. " \\\\ " 
 						.. round(b[i+1][1],rndx) .. "  " 
-						.. round(b[i+1][2],rndy) .. "\n" 
+						.. round(b[i+1][2],rndy) .. " \\\\ " 
 						.. round(b[i+1][3],rndx) .. "  " 
-						.. round(b[i+1][4],rndy) .. "\n\n" 
+						.. round(b[i+1][4],rndy) .. " \\\\ \\\\" 
 					end
 				end
 			else -- notation = tikz
@@ -464,13 +454,6 @@ local function beziertabletostring(b,rndx,rndy,rev,notation)
 						.. round(b[i][2],rndy) ..")"
 					end
 				end
-			end
-		end
-	end
-	if notation == "pgfplots" then
-		for i =1, 2 do
-			if bezierstring:sub(#bezierstring,#bezierstring) == "\n" then
-				bezierstring = bezierstring:sub(1, -2)
 			end
 		end
 	end
@@ -543,7 +526,7 @@ local function graphtobezierapprox(f,g,starti,endi,maxerror)
 		end
 		local left = graphtobezierapprox(f,g,starti,interindex,maxerror)
 		local right = graphtobezierapprox(f,g,interindex,endi,maxerror)
-		for i=1, #right do
+		for i=1, #right do --now append the right to the left:
 			left[#left+1] = right[i]
 		end
 		return left
@@ -630,6 +613,9 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax,notation)
 	-- go through the connected parts
 	for part = 1, #graphs do 
 		local d = diffgraph(f,graphs[part],xstep)
+		--for i = 1, #d do -- just for debugging
+		-- 	print(d[i][1],d[i][2],d[i][3],d[i][4],d[i][5],d[i][6])
+		--end
 		-- check for type of function (only for the first part)
 		if part == 1 then
 			if is_affine(d,yerror) then
@@ -733,17 +719,40 @@ function bezierplot(functionstring,xmin,xmax,ymin,ymax,notation)
 			local startindex = 1
 			for k = 2, #d do
 				if d[k][5] or d[k][6] then -- extrema and inflection points
-					bezierpoints[#bezierpoints+1] = graphtobezierapprox(
+					local tobeadded = graphtobezierapprox(
 					f,d,startindex,k,(ymax-ymin)/(0.5*10^rndy))
+					-- tobeadded may contain a multiple of 6 entries
+				-- e.g. {1,2,3,4,5,6,7,8,9,10,11,12}
+					for i = 1, math.floor(#tobeadded/6) do
+						bezierpoints[#bezierpoints+1] = {}
+						for j = 1, 6 do
+							bezierpoints[#bezierpoints][j] = tobeadded[(i-1)*6+j]
+						end
+					end
 					startindex = k
 				end
 			end
 			if startindex ~= #d then -- if no special points inbetween
-				bezierpoints[#bezierpoints+1] = graphtobezierapprox(f,d,
+				local tobeadded = graphtobezierapprox(f,d,
 				startindex,#d,(ymax-ymin)/(0.5*10^rndy))
+				-- tobeadded may contain a multiple of 6 entries
+				-- e.g. {1,2,3,4,5,6,7,8,9,10,11,12}
+				for i = 1, math.floor(#tobeadded/6) do
+					bezierpoints[#bezierpoints+1] = {}
+					for j = 1, 6 do
+						bezierpoints[#bezierpoints][j] = tobeadded[(i-1)*6+j]
+					end
+				end
 			end
 		end
 	end
+	-- only for debugging:
+	--for i = 1, #bezierpoints do
+	-- 	for j = 1, #bezierpoints[i] do
+	-- 		print(bezierpoints[i][j])
+	-- 	end
+	---print("\n")
+	--end
 	return beziertabletostring(bezierpoints,rndx,rndy,isreverse,notation)
 end
 

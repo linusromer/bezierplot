@@ -113,8 +113,15 @@ local function diffgraph(func,graph,h)
 		if not (dgraph[i+1][1] - dgraph[i][1] > 1.5*h) then
 			-- check for dy/dx == 0 
 			-- if not already determined as near dy/dx=0
-			if (not dgraph[i][5]) and (abs(dgraph[i][3]*dgraph[i+1][3]) 
-				~= dgraph[i][3]*dgraph[i+1][3]) then -- this must be near
+			if dgraph[i][3] == 0 then
+				if dgraph[i+1][3] == 0 then --take the later
+					dgraph[i+1][5] = true
+					dgraph[i][5] = false
+				else
+					dgraph[i][5] = true
+				end
+			elseif abs(dgraph[i][3]*dgraph[i+1][3]) 
+			~= dgraph[i][3]*dgraph[i+1][3] then -- this must be near
 				if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
 					dgraph[i][5] = true
 				else
@@ -374,7 +381,8 @@ end
 -- (8,9) and (10,11) .. (12,13)
 -- will be returned
 -- the notation "pgfplots" will change the notation to
--- 0  1 \\ 6  7 \\ 2  3 \\ 4  5 \\ \\ 6  7 \\ 12 13 \\ 8  9 \\ 10 11 \\
+-- YES: \addplot coordinates {(0,1) (6,7) (2,3) (4,5) (6,7) (12,13) (8,9) (10,11)}
+-- NO: 0  1 \\ 6  7 \\ 2  3 \\ 4  5 \\ \\ 6  7 \\ 12 13 \\ 8  9 \\ 10 11 \\
 -- As pgfplots does not connect the bezier segments
 -- reverse paths are not implemented 
 local function beziertabletostring(b,rndx,rndy,rev,notation)
@@ -387,14 +395,15 @@ local function beziertabletostring(b,rndx,rndy,rev,notation)
 				.. round(b[1][2],rndy) ..")"
 		else
 			if notation == "pgfplots" then
-				bezierstring = round(b[1][1],rndx) .. "  " 
-					.. round(b[1][2],rndy) .. "\\\\"
-					.. round(b[2][1],rndx) .. "  " 
-					.. round(b[2][2],rndy) .. "\\\\"
-					.. round(b[1][1],rndx) .. "  " 
-					.. round(b[1][2],rndy) .. "\\\\"
-					.. round(b[2][1],rndx) .. "  " 
-					.. round(b[2][2],rndy)
+				bezierstring = "\\addplot coordinates {(" 
+					.. round(b[1][1],rndx) .. "," 
+					.. round(b[1][2],rndy) .. ") (" 
+					.. round(b[2][1],rndx) .. "," 
+					.. round(b[2][2],rndy) .. ") (" 
+					.. round(b[1][1],rndx) .. ","  
+					.. round(b[1][2],rndy) .. ") (" 
+					.. round(b[2][1],rndx) .. "," 
+					.. round(b[2][2],rndy) .. ") }" 
 			else -- notation = tikz
 				bezierstring = "(" .. round(b[1][1],rndx) .. "," 
 					.. round(b[1][2],rndy) ..")"
@@ -404,8 +413,8 @@ local function beziertabletostring(b,rndx,rndy,rev,notation)
 		end
 	else
 		if rev then
-			bezierstring = "(" .. round(b[#b][#b[#b]],rndx) .. "," 
-			.. round(b[#b][#b[#b]-1],rndy) ..")" -- initial point
+			bezierstring = "(" .. round(b[#b][#b[#b]-1],rndx) .. "," 
+			.. round(b[#b][#b[#b]],rndy) ..")" -- initial point
 			for i = #b, 2, -1 do
 				if #b[i] >= 6 then -- cubic bezier spline
 					bezierstring = bezierstring .. " .. controls (" 
@@ -423,19 +432,21 @@ local function beziertabletostring(b,rndx,rndy,rev,notation)
 			end
 		else
 			if notation == "pgfplots" then
+				bezierstring = "\\addplot coordinates {"
 				for i = 1, #b-1 do
 					if #b[i+1] >= 6 then -- cubic bezier spline
-						bezierstring = bezierstring 
-						.. round(b[i][#b[i]-1],rndx) .. "  " 
-						.. round(b[i][#b[i]],rndy) .. " \\\\ " 
-						.. round(b[i+1][5],rndx) .. "  " 
-						.. round(b[i+1][6],rndy) .. " \\\\ " 
-						.. round(b[i+1][1],rndx) .. "  " 
-						.. round(b[i+1][2],rndy) .. " \\\\ " 
-						.. round(b[i+1][3],rndx) .. "  " 
-						.. round(b[i+1][4],rndy) .. " \\\\ \\\\" 
+						bezierstring = bezierstring .. "("
+						.. round(b[i][#b[i]-1],rndx) .. "," 
+						.. round(b[i][#b[i]],rndy) .. ") (" 
+						.. round(b[i+1][5],rndx) .. "," 
+						.. round(b[i+1][6],rndy) .. ") ("  
+						.. round(b[i+1][1],rndx) .. "," 
+						.. round(b[i+1][2],rndy) .. ") (" 
+						.. round(b[i+1][3],rndx) .. "," 
+						.. round(b[i+1][4],rndy) .. ") " 
 					end
 				end
+				bezierstring = bezierstring .. "}"
 			else -- notation = tikz
 				bezierstring = "(" .. round(b[1][1],rndx) .. "," 
 				.. round(b[1][2],rndy) ..")" -- initial point

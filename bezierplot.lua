@@ -773,22 +773,22 @@ if not pcall(debug.getlocal, 4, 1) then
 	if #arg >= 1 then
 		local xmin = -5
 		local xmax = 5
-		if #arg >= 2 then xmin = arg[2] end
+		if #arg >= 2 then xmin = tonumber(arg[2]) end
 		if #arg >= 3 then
 			if arg[3] == arg[2] then
 				xmax = xmin + 10
 			else
-				xmax = arg[3]
+				xmax = tonumber(arg[3])
 			end
 		end
 		local ymin = -5
 		local ymax = 5
-		if #arg >= 4 then ymin = arg[4] end
+		if #arg >= 4 then ymin = tonumber(arg[4]) end
 		if #arg >= 5 then 
 			if arg[5] == arg[4] then
 				ymax = ymin + 10
 			else
-				ymax = arg[5]
+				ymax = tonumber(arg[5])
 			end
 		end
 		if #arg >= 6 then 

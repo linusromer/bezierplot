@@ -10,7 +10,7 @@
 \else
  \let\xpandblinpt\@@input
  \DeclareExpandableDocumentCommand{\xbezierplot}{O{-5} O{5} O{-5} O{5} O{tikz} m}{%
-  \xpandblinpt|"bezierplot '#6' #1 #2 #3 #4 #5"
+  \xpandblinpt|"bezierplot '#6' #1 #2 #3 #4 '#5'"
  }
 \fi
 \providecommand\bezierplot{\romannumeral`\^^@\xbezierplot}

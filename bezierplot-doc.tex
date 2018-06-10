@@ -130,7 +130,10 @@ will set $0\leq x\leq 1$ and $-3\leq y\leq 2.5$. You may also omit the $y$--rang
 \begin{verbatim}
 lua bezierplot.lua "FUNCTION" 0 1
 \end{verbatim}
-will set $0\leq x\leq 1$ and leave the default $-5\leq y\leq 5$.
+will set $0\leq x\leq 1$ and leave the default $-5\leq y\leq 5$. The variables \verb|XMIN|, \verb|XMAX|, \verb|YMIN| and \verb|YMAX| may also be computable expressions like \verb|2*pi+6|:
+\begin{verbatim}
+lua bezierplot.lua "sin(x)" -pi pi
+\end{verbatim}
 \subsection{Notation Of Functions}
 The function term given to \verb|bezierplot| must contain at most one variable: $x$. E.g. \verb|"2.3*(x-1)^2-3"|. You must not omit \verb|*| operators:
 \begin{center}

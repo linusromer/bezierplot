@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
--- version 1.1 2018-06-02
+-- version 1.1 2018-06-10
 abs = math.abs
 acos = math.acos
 asin = math.asin
@@ -387,82 +387,84 @@ end
 -- reverse paths are not implemented 
 local function beziertabletostring(b,rndx,rndy,rev,notation)
 	local bezierstring = ""
-	if #b == 2 and #b[2] == 2 then -- straight line
-		if rev then
-			bezierstring = "(" .. round(b[2][1],rndx) .. "," 
-				.. round(b[2][2],rndy) ..")"
-				.. " -- (" .. round(b[1][1],rndx) .. "," 
-				.. round(b[1][2],rndy) ..")"
-		else
-			if notation == "pgfplots" then
-				bezierstring = "\\addplot coordinates {(" 
-					.. round(b[1][1],rndx) .. "," 
-					.. round(b[1][2],rndy) .. ") (" 
-					.. round(b[2][1],rndx) .. "," 
-					.. round(b[2][2],rndy) .. ") (" 
-					.. round(b[1][1],rndx) .. ","  
-					.. round(b[1][2],rndy) .. ") (" 
-					.. round(b[2][1],rndx) .. "," 
-					.. round(b[2][2],rndy) .. ") }" 
-			else -- notation = tikz
-				bezierstring = "(" .. round(b[1][1],rndx) .. "," 
-					.. round(b[1][2],rndy) ..")"
-					.. " -- (" .. round(b[2][1],rndx) .. "," 
+	if #b > 1 then -- if not empty or single point
+		if #b == 2 and #b[2] == 2 then -- straight line
+			if rev then
+				bezierstring = "(" .. round(b[2][1],rndx) .. "," 
 					.. round(b[2][2],rndy) ..")"
-			end	
-		end
-	else
-		if rev then
-			bezierstring = "(" .. round(b[#b][#b[#b]-1],rndx) .. "," 
-			.. round(b[#b][#b[#b]],rndy) ..")" -- initial point
-			for i = #b, 2, -1 do
-				if #b[i] >= 6 then -- cubic bezier spline
-					bezierstring = bezierstring .. " .. controls (" 
-					.. round(b[i][3],rndx) .. "," 
-					.. round(b[i][4],rndy) ..") and ("
-					.. round(b[i][1],rndx) .. "," 
-					.. round(b[i][2],rndy) .. ") .. (" 
-					.. round(b[i-1][#b[i-1]-1],rndx) .. "," 
-					.. round(b[i-1][#b[i-1]],rndy)..")"
-				else
-					bezierstring = bezierstring .. " (" 
-					.. round(b[i-1][#b[i-1]-1],rndx) .. "," 
-					.. round(b[i-1][#b[i-1]],rndy) ..")"
-				end
+					.. " -- (" .. round(b[1][1],rndx) .. "," 
+					.. round(b[1][2],rndy) ..")"
+			else
+				if notation == "pgfplots" then
+					bezierstring = "\\addplot coordinates {(" 
+						.. round(b[1][1],rndx) .. "," 
+						.. round(b[1][2],rndy) .. ") (" 
+						.. round(b[2][1],rndx) .. "," 
+						.. round(b[2][2],rndy) .. ") (" 
+						.. round(b[1][1],rndx) .. ","  
+						.. round(b[1][2],rndy) .. ") (" 
+						.. round(b[2][1],rndx) .. "," 
+						.. round(b[2][2],rndy) .. ") }" 
+				else -- notation = tikz
+					bezierstring = "(" .. round(b[1][1],rndx) .. "," 
+						.. round(b[1][2],rndy) ..")"
+						.. " -- (" .. round(b[2][1],rndx) .. "," 
+						.. round(b[2][2],rndy) ..")"
+				end	
 			end
 		else
-			if notation == "pgfplots" then
-				bezierstring = "\\addplot coordinates {"
-				for i = 1, #b-1 do
-					if #b[i+1] >= 6 then -- cubic bezier spline
-						bezierstring = bezierstring .. "("
-						.. round(b[i][#b[i]-1],rndx) .. "," 
-						.. round(b[i][#b[i]],rndy) .. ") (" 
-						.. round(b[i+1][5],rndx) .. "," 
-						.. round(b[i+1][6],rndy) .. ") ("  
-						.. round(b[i+1][1],rndx) .. "," 
-						.. round(b[i+1][2],rndy) .. ") (" 
-						.. round(b[i+1][3],rndx) .. "," 
-						.. round(b[i+1][4],rndy) .. ") " 
-					end
-				end
-				bezierstring = bezierstring .. "}"
-			else -- notation = tikz
-				bezierstring = "(" .. round(b[1][1],rndx) .. "," 
-				.. round(b[1][2],rndy) ..")" -- initial point
-				for i = 2, #b do
+			if rev then
+				bezierstring = "(" .. round(b[#b][#b[#b]-1],rndx) .. "," 
+				.. round(b[#b][#b[#b]],rndy) ..")" -- initial point
+				for i = #b, 2, -1 do
 					if #b[i] >= 6 then -- cubic bezier spline
 						bezierstring = bezierstring .. " .. controls (" 
-						.. round(b[i][1],rndx) .. "," 
-						.. round(b[i][2],rndy) ..") and ("
 						.. round(b[i][3],rndx) .. "," 
-						.. round(b[i][4],rndy) .. ") .. (" 
-						.. round(b[i][5],rndx) .. "," 
-						.. round(b[i][6],rndy)..")"
+						.. round(b[i][4],rndy) ..") and ("
+						.. round(b[i][1],rndx) .. "," 
+						.. round(b[i][2],rndy) .. ") .. (" 
+						.. round(b[i-1][#b[i-1]-1],rndx) .. "," 
+						.. round(b[i-1][#b[i-1]],rndy)..")"
 					else
 						bezierstring = bezierstring .. " (" 
-						.. round(b[i][1],rndx) .. "," 
-						.. round(b[i][2],rndy) ..")"
+						.. round(b[i-1][#b[i-1]-1],rndx) .. "," 
+						.. round(b[i-1][#b[i-1]],rndy) ..")"
+					end
+				end
+			else
+				if notation == "pgfplots" then
+					bezierstring = "\\addplot coordinates {"
+					for i = 1, #b-1 do
+						if #b[i+1] >= 6 then -- cubic bezier spline
+							bezierstring = bezierstring .. "("
+							.. round(b[i][#b[i]-1],rndx) .. "," 
+							.. round(b[i][#b[i]],rndy) .. ") (" 
+							.. round(b[i+1][5],rndx) .. "," 
+							.. round(b[i+1][6],rndy) .. ") ("  
+							.. round(b[i+1][1],rndx) .. "," 
+							.. round(b[i+1][2],rndy) .. ") (" 
+							.. round(b[i+1][3],rndx) .. "," 
+							.. round(b[i+1][4],rndy) .. ") " 
+						end
+					end
+					bezierstring = bezierstring .. "}"
+				else -- notation = tikz
+					bezierstring = "(" .. round(b[1][1],rndx) .. "," 
+					.. round(b[1][2],rndy) ..")" -- initial point
+					for i = 2, #b do
+						if #b[i] >= 6 then -- cubic bezier spline
+							bezierstring = bezierstring .. " .. controls (" 
+							.. round(b[i][1],rndx) .. "," 
+							.. round(b[i][2],rndy) ..") and ("
+							.. round(b[i][3],rndx) .. "," 
+							.. round(b[i][4],rndy) .. ") .. (" 
+							.. round(b[i][5],rndx) .. "," 
+							.. round(b[i][6],rndy)..")"
+						else
+							bezierstring = bezierstring .. " (" 
+							.. round(b[i][1],rndx) .. "," 
+							.. round(b[i][2],rndy) ..")"
+						end
 					end
 				end
 			end
@@ -773,22 +775,30 @@ if not pcall(debug.getlocal, 4, 1) then
 	if #arg >= 1 then
 		local xmin = -5
 		local xmax = 5
-		if #arg >= 2 then xmin = tonumber(arg[2]) end
+		if #arg >= 2 then 
+			local tempfunc = assert(load("return " .. arg[2]))
+			xmin = tempfunc()
+		end
 		if #arg >= 3 then
 			if arg[3] == arg[2] then
 				xmax = xmin + 10
 			else
-				xmax = tonumber(arg[3])
+				local tempfunc = assert(load("return " .. arg[3]))
+				xmax = tempfunc()
 			end
 		end
 		local ymin = -5
 		local ymax = 5
-		if #arg >= 4 then ymin = tonumber(arg[4]) end
+		if #arg >= 4 then 
+			local tempfunc = assert(load("return " .. arg[4]))
+			ymin = tempfunc()
+		end
 		if #arg >= 5 then 
 			if arg[5] == arg[4] then
 				ymax = ymin + 10
 			else
-				ymax = tonumber(arg[5])
+				local tempfunc = assert(load("return " .. arg[5]))
+				ymax = tempfunc()
 			end
 		end
 		if #arg >= 6 then 

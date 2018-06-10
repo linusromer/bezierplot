@@ -47,95 +47,101 @@ end
 -- the derivatives in form {{x,y,dy/dx,ddy/ddx},...}
 local function diffgraph(func,graph,h)
 	local dgraph = {}	
-	local yh = func(graph[1][1]-h)
-	local yhh = func(graph[1][1]-2*h)
-	if yhh > -math.huge and yhh < math.huge  -- if defined at all
-	and yh > -math.huge and yh < math.huge then
-		dgraph[1] = {graph[1][1],graph[1][2],
-		(yhh-8*yh+8*graph[2][2]-graph[3][2])/(12*h),
-		(-yhh+16*yh-30*graph[1][2]+16*graph[2][2]-graph[3][2])
-		/(12*h^2)}
-		dgraph[2] = {graph[2][1],graph[2][2],
-		(yh-8*graph[1][2]+8*graph[3][2]-graph[4][2])/(12*h),
-		(-yh+16*graph[1][2]-30*graph[2][2]+16*graph[3][2]-graph[4][2])
-		/(12*h^2)}
-	else -- take neighbour values
-		dgraph[1] = {graph[1][1],graph[1][2],
-		(graph[1][2]-8*graph[2][2]+8*graph[4][2]-graph[5][2])/(12*h),
-		(-graph[1][2]+16*graph[2][2]-30*graph[3][2]
-		+16*graph[4][2]-graph[5][2])/(12*h^2)}
-		dgraph[2] = {graph[2][1],graph[2][2],
-		(graph[1][2]-8*graph[2][2]+8*graph[4][2]-graph[5][2])/(12*h),
-		(-graph[1][2]+16*graph[2][2]-30*graph[3][2]
-		+16*graph[4][2]-graph[5][2])/(12*h^2)}
-	end
 	local l = #graph
-	for i = 3, l-2 do 
-		table.insert(dgraph,{graph[i][1],graph[i][2],
-		(graph[i-2][2]-8*graph[i-1][2]+8*graph[i+1][2]-graph[i+2][2])
-		/(12*h),
-		(-graph[i-2][2]+16*graph[i-1][2]-30*graph[i][2]
-		+16*graph[i+1][2]-graph[i+2][2])
-		/(12*h^2)})
-	end
-	yh = func(graph[l][1]+h)
-	yhh = func(graph[l][1]+2*h)
-	if yhh > -math.huge and yhh < math.huge  -- if defined at all
-	and yh > -math.huge and yh < math.huge then
-		dgraph[l-1] = {graph[l-1][1],graph[l-1][2],
-		(graph[l-3][2]-8*graph[l-2][2]+8*graph[l][2]-yh)/(12*h),
-		(-graph[l-3][2]+16*graph[l-2][2]-30*graph[l-1][2]
-		+16*graph[l][2]-yh)/(12*h^2)}
-		dgraph[l] = {graph[l][1],graph[l][2],
-		(graph[l-2][2]-8*graph[l-1][2]+8*yh-yhh)/(12*h),
-		(-graph[l-2][2]+16*graph[l-1][2]-30*graph[l][2]
-		+16*yh-yhh)/(12*h^2)}
-	else	
-		-- take neighbour values
-		dgraph[l] = {graph[l][1],graph[l][2],
-		(graph[l-4][2]-8*graph[l-3][2]+8*graph[l-1][2]-graph[l][2])
-		/(12*h),
-		(-graph[l-4][2]+16*graph[l-3][2]-30*graph[l-2][2]
-		+16*graph[l-1][2]-graph[l][2])/(12*h^2)}
-		dgraph[l-1] = {graph[l-1][1],graph[l-2][2],
-		(graph[l-4][2]-8*graph[l-3][2]+8*graph[l-1][2]-graph[l][2])
-		/(12*h),
-		(-graph[l-4][2]+16*graph[l-3][2]-30*graph[l-2][2]
-		+16*graph[l-1][2]-graph[l][2])/(12*h^2)}
-	end
-	-- add information about being extremum / inflection point (true/false)
-	for i = 1, l do 
-		dgraph[i][5] = false -- dy/dx == 0 ? default, may change later
-		dgraph[i][6] = false -- ddy/ddx == 0 ? default, may change later
-	end
-	for i = 1, l-1 do 
-		-- if no gap is inbetween
-		if not (dgraph[i+1][1] - dgraph[i][1] > 1.5*h) then
-			-- check for dy/dx == 0 
-			-- if not already determined as near dy/dx=0
-			if dgraph[i][3] == 0 then
-				if dgraph[i+1][3] == 0 then --take the later
-					dgraph[i+1][5] = true
-					dgraph[i][5] = false
-				else
-					dgraph[i][5] = true
+	if l < 4 then -- this is not worth the pain...
+		for i = 1, l do 
+			table.insert(dgraph,{graph[i][1],graph[i][2],0,0})
+		end
+	else
+		local yh = func(graph[1][1]-h)
+		local yhh = func(graph[1][1]-2*h)
+		if yhh > -math.huge and yhh < math.huge  -- if defined at all
+		and yh > -math.huge and yh < math.huge then
+			dgraph[1] = {graph[1][1],graph[1][2],
+			(yhh-8*yh+8*graph[2][2]-graph[3][2])/(12*h),
+			(-yhh+16*yh-30*graph[1][2]+16*graph[2][2]-graph[3][2])
+			/(12*h^2)}
+			dgraph[2] = {graph[2][1],graph[2][2],
+			(yh-8*graph[1][2]+8*graph[3][2]-graph[4][2])/(12*h),
+			(-yh+16*graph[1][2]-30*graph[2][2]+16*graph[3][2]-graph[4][2])
+			/(12*h^2)}
+		else -- take neighbour values
+			dgraph[1] = {graph[1][1],graph[1][2],
+			(graph[1][2]-8*graph[2][2]+8*graph[4][2]-graph[5][2])/(12*h),
+			(-graph[1][2]+16*graph[2][2]-30*graph[3][2]
+			+16*graph[4][2]-graph[5][2])/(12*h^2)}
+			dgraph[2] = {graph[2][1],graph[2][2],
+			(graph[1][2]-8*graph[2][2]+8*graph[4][2]-graph[5][2])/(12*h),
+			(-graph[1][2]+16*graph[2][2]-30*graph[3][2]
+			+16*graph[4][2]-graph[5][2])/(12*h^2)}
+		end
+		for i = 3, l-2 do 
+			table.insert(dgraph,{graph[i][1],graph[i][2],
+			(graph[i-2][2]-8*graph[i-1][2]+8*graph[i+1][2]-graph[i+2][2])
+			/(12*h),
+			(-graph[i-2][2]+16*graph[i-1][2]-30*graph[i][2]
+			+16*graph[i+1][2]-graph[i+2][2])
+			/(12*h^2)})
+		end
+		yh = func(graph[l][1]+h)
+		yhh = func(graph[l][1]+2*h)
+		if yhh > -math.huge and yhh < math.huge  -- if defined at all
+		and yh > -math.huge and yh < math.huge then
+			dgraph[l-1] = {graph[l-1][1],graph[l-1][2],
+			(graph[l-3][2]-8*graph[l-2][2]+8*graph[l][2]-yh)/(12*h),
+			(-graph[l-3][2]+16*graph[l-2][2]-30*graph[l-1][2]
+			+16*graph[l][2]-yh)/(12*h^2)}
+			dgraph[l] = {graph[l][1],graph[l][2],
+			(graph[l-2][2]-8*graph[l-1][2]+8*yh-yhh)/(12*h),
+			(-graph[l-2][2]+16*graph[l-1][2]-30*graph[l][2]
+			+16*yh-yhh)/(12*h^2)}
+		else	
+			-- take neighbour values
+			dgraph[l] = {graph[l][1],graph[l][2],
+			(graph[l-4][2]-8*graph[l-3][2]+8*graph[l-1][2]-graph[l][2])
+			/(12*h),
+			(-graph[l-4][2]+16*graph[l-3][2]-30*graph[l-2][2]
+			+16*graph[l-1][2]-graph[l][2])/(12*h^2)}
+			dgraph[l-1] = {graph[l-1][1],graph[l-2][2],
+			(graph[l-4][2]-8*graph[l-3][2]+8*graph[l-1][2]-graph[l][2])
+			/(12*h),
+			(-graph[l-4][2]+16*graph[l-3][2]-30*graph[l-2][2]
+			+16*graph[l-1][2]-graph[l][2])/(12*h^2)}
+		end
+		-- add information about being extremum / inflection point (true/false)
+		for i = 1, l do 
+			dgraph[i][5] = false -- dy/dx == 0 ? default, may change later
+			dgraph[i][6] = false -- ddy/ddx == 0 ? default, may change later
+		end
+		for i = 1, l-1 do 
+			-- if no gap is inbetween
+			if not (dgraph[i+1][1] - dgraph[i][1] > 1.5*h) then
+				-- check for dy/dx == 0 
+				-- if not already determined as near dy/dx=0
+				if dgraph[i][3] == 0 then
+					if dgraph[i+1][3] == 0 then --take the later
+						dgraph[i+1][5] = true
+						dgraph[i][5] = false
+					else
+						dgraph[i][5] = true
+					end
+				elseif abs(dgraph[i][3]*dgraph[i+1][3]) 
+				~= dgraph[i][3]*dgraph[i+1][3] then -- this must be near
+					if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
+						dgraph[i][5] = true
+					else
+						dgraph[i+1][5] = true
+					end
 				end
-			elseif abs(dgraph[i][3]*dgraph[i+1][3]) 
-			~= dgraph[i][3]*dgraph[i+1][3] then -- this must be near
-				if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
-					dgraph[i][5] = true
-				else
-					dgraph[i+1][5] = true
-				end
-			end
-			-- check for ddy/ddx == 0 
-			-- if not already determined as near ddy/ddx=0
-			if (not dgraph[i][6]) and (abs(dgraph[i][4]*dgraph[i+1][4]) 
-				~= dgraph[i][4]*dgraph[i+1][4]) then -- this must be near
-				if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
-					dgraph[i][6] = true
-				else
-					dgraph[i+1][6] = true
+				-- check for ddy/ddx == 0 
+				-- if not already determined as near ddy/ddx=0
+				if (not dgraph[i][6]) and (abs(dgraph[i][4]*dgraph[i+1][4]) 
+					~= dgraph[i][4]*dgraph[i+1][4]) then -- this must be near
+					if abs(dgraph[i][4]) <= abs(dgraph[i+1][4]) then
+						dgraph[i][6] = true
+					else
+						dgraph[i+1][6] = true
+					end
 				end
 			end
 		end
@@ -281,12 +287,16 @@ end
 -- a, b, c, d being real numbers
 local function is_cubic(graph,maxerror)
 	local l = #graph
-	local a, b, c, d = parameters_cubic(graph[1][1],graph[1][2],
-	graph[math.floor(l/3)][1],graph[math.floor(l/3)][2],
-	graph[math.floor(2*l/3)][1],graph[math.floor(2*l/3)][2],
-	graph[l][1],graph[l][2])
-	return do_parameters_fit(a,b,c,d,"a*x^3+b*x^2+c*x+d",graph,
-	maxerror,false)
+	if l < 2 then
+		return false
+	else
+		local a, b, c, d = parameters_cubic(graph[1][1],graph[1][2],
+		graph[math.floor(l/3)][1],graph[math.floor(l/3)][2],
+		graph[math.floor(2*l/3)][1],graph[math.floor(2*l/3)][2],
+		graph[l][1],graph[l][2])
+		return do_parameters_fit(a,b,c,d,"a*x^3+b*x^2+c*x+d",graph,
+		maxerror,false)
+	end
 end
 
 -- returns true iff the function is of type f(x)=a*x^3+b*x^2+c*x+d
@@ -317,12 +327,16 @@ end
 -- a, b, c, d being real numbers
 local function is_cuberoot(graph,maxerror)
 	local l = #graph
-	local a, b, c, d = parameters_cubic(graph[1][2],graph[1][1],
-	graph[math.floor(l/3)][2],graph[math.floor(l/3)][1],
-	graph[math.floor(2*l/3)][2],graph[math.floor(2*l/3)][1],
-	graph[l][2],graph[l][1])
-	return do_parameters_fit(a,b,c,d,"a*x^3+b*x^2+c*x+d",graph,
-	maxerror,true)
+	if l < 2 then
+		return false
+	else
+		local a, b, c, d = parameters_cubic(graph[1][2],graph[1][1],
+		graph[math.floor(l/3)][2],graph[math.floor(l/3)][1],
+		graph[math.floor(2*l/3)][2],graph[math.floor(2*l/3)][1],
+		graph[l][2],graph[l][1])
+		return do_parameters_fit(a,b,c,d,"a*x^3+b*x^2+c*x+d",graph,
+		maxerror,true)
+	end
 end
 
 -- returns true iff the function is of type f(x)=a*x^3+b*x^2+c*x+d

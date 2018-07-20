@@ -627,7 +627,7 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 	-- the output of the x coordinates will be rounded to rndx digits
 	local rndx = math.max(0,math.floor(5.5-log(xmax-xmin)/log(10)))
 	local xerror = abs(xmax-xmin)/(10^rndx)
-	-- the output of the x coordinates will be rounded to rndy digits
+	-- the output of the y coordinates will be rounded to rndy digits
 	local rndy = math.max(0,math.floor(5.5-log(ymax-ymin)/log(10)))
 	local yerror = (ymax-ymin)/(10^rndy)
 	-- determine parts of the graph that are inside window
@@ -636,13 +636,19 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 	local outside = true -- value is outside window
 	local i = 0
 	local j = 0
+	local yminreal -- determine the real minimimum of the y coord.
+	local ymaxreal -- just decring
+	local yminrealfound = false
+	local ymaxrealfound = false
 	for n = 0, xsteps do
 		local x = xmin + n/xsteps*(xmax-xmin)
 		if n == xsteps then
 			x = xmax
 		end
 		local y = f(x)
-		if y >= ymin-yerror and y <= ymax+yerror then -- inside
+		if (y >= ymin-yerror and ymin ~= -huge or y > ymin and ymin == -huge)
+		and (y <= ymax+yerror and ymax ~= huge or y < ymax and ymax == huge)
+		then -- inside
 			if outside then -- if it was outside before
 				outside = false
 				j = 0
@@ -652,9 +658,25 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 			j = j + 1
 			graphs[i][j] = {x,y}
 			graph[#graph+1] = {x,y}
+			if not yminrealfound or yminrealfound and y < yminreal then
+				yminreal = y
+				yminrealfound = true
+			end
+			if not ymaxrealfound or ymaxrealfound and y > ymaxreal then
+				ymaxreal = y
+				ymaxrealfound = true
+			end
 		else
 			outside = true
 		end
+	end
+	
+	-- some redefinitions
+	if #graph ~= 0 then
+		ymin = yminreal
+		ymax = ymaxreal
+		rndy = math.max(0,math.floor(5.5-log(ymax-ymin)/log(10)))
+		yerror = (ymax-ymin)/(10^rndy)
 	end
 	
 	-- check for the function type (for this, we need the concatenated

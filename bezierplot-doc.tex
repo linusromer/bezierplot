@@ -28,9 +28,9 @@ Given a smooth function, \texttt{bezierplot} returns a smooth bezier path writte
 The following example will show a comparison of \textsc{gnuplot} with \verb|bezierplot| for the function $y=\sqrt{x}$ for $0\leq x \leq 5$:
 \begin{center}
 	\begin{tikzpicture}[scale=1.4]
-		\draw (0,0) .. controls (0,0.745) and (1.667,1.491) .. (5,2.236);
+		\draw (0,0) .. controls (0,0.7454) and (1.6667,1.4907) .. (5,2.2361);
 		\draw (0,0) circle(.02) -- (0,0.745) circle( .02);
-		\draw (1.667,1.491) circle(.02) -- (5,2.236) circle( .02);
+		\draw (1.6667,1.4907) circle(.02) -- (5,2.2361) circle( .02);
 		\draw (2.5,.5) node[above]{\verb|bezierplot|};
 		\begin{scope}[shift={(5.2,0)}]
 		\draw[domain=0:5,samples=51] plot function{x**0.5};
@@ -68,11 +68,11 @@ The \texttt{bezierplot} package is loaded with \verb|\usepackage{bezierplot}|. T
 \end{center}
 \end{multicols}
 \noindent
-The command \verb|\bezierplot| has 4 optional arguments in the sense of
+The command \verb|\bezierplot| has 6 optional arguments in the sense of
 \begin{center}
-	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX]{FUNCTION}|
+	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX][SAMPLES][NOTATION]{FUNCTION}|
 \end{center}
-The defaults are \verb|XMIN| = \verb|YMIN| $= -5$ and  \verb|XMAX| = \verb|YMAX| $= 5$. 
+The defaults are \verb|XMIN| = \verb|YMIN| $= -5$, \verb|XMAX| = \verb|YMAX| $= 5$, \verb|SAMPLES| $= 0$ (this will set as few samples as possible), \verb|NOTATION| $=$ tikz (the only other notation is pgfplots). 
 \begin{center}
 	\begin{tikzpicture}[scale=.7]
 		\draw \bezierplot[-1][2]{x^2};
@@ -116,11 +116,11 @@ lua bezierplot.lua "3*x^0.8+2"
 \end{verbatim}
 will return
 \begin{verbatim}
-(0,2) .. controls (0.03,2.282) and (0.268,3.244) .. (1,5)
+(0,2) .. controls (0.0168,2.1905) and (0.2073,3.0978) .. (1.0004,5.001)
 \end{verbatim}
 You can set the window of the graph as follows:
 \begin{verbatim}
-lua bezierplot.lua "FUNCTION" XMIN XMAX YMIN YMAX
+lua bezierplot.lua "FUNCTION" XMIN XMAX YMIN YMAX SAMPLES NOTATION
 \end{verbatim}
 e.g.
 \begin{verbatim}
@@ -153,15 +153,19 @@ The following functions and constants are possible:
 	\verb|cbrt| & cube root $\sqrt[3]{\quad}$ that works for negative numbers, too\\
 	\verb|cos| & cosine for angles in radians\\
 	\verb|exp| & the exponential function $e^{(\;)}$\\
+	\verb|huge| & the numerical $\infty$\\
 	\verb|e| & the euler constant $e=\mathrm{exp}(1)$\\
 	\verb|log| & the natural logarithm $\mathrm{log}_e(\;)$\\
 	\verb|pi| & Archimedes’ constant $\pi\approx 3.14$\\
 	\verb|sgn| & sign function\\
 	\verb|sin| & sine for angles in radians\\
 	\verb|sqrt| & square root $\sqrt{\quad}$\\
-	\verb|tan| & tangent for angles in radians\\
+	\verb|tan| & tangent for angles in radians
 \end{tabular}
 \end{center}
+%
+\newpage
+%
 \section{Examples of \texttt{bezierplot} in Comparison with \textsc{gnuplot}}
 The following graphs are drawn with \texttt{bezierplot} (black) and \textsc{gnuplot} (red). \textsc{gnuplot} used 1000 samples per example. The functions are given below the pictures (left: bezierplot, right: \textsc{gnuplot}).
 \begin{multicols}{3}

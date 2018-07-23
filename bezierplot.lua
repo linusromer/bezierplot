@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
--- version 1.2 2018-07-20
+-- version 1.2 2018-07-23
 abs = math.abs
 acos = math.acos
 asin = math.asin
@@ -672,7 +672,7 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 	end
 	
 	-- some redefinitions
-	if #graph ~= 0 then
+	if #graph ~= 0 and yminreal ~= ymaxreal then
 		ymin = yminreal
 		ymax = ymaxreal
 		rndy = math.max(0,math.floor(5.5-log(ymax-ymin)/log(10)))

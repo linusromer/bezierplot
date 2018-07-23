@@ -70,9 +70,9 @@ The \texttt{bezierplot} package is loaded with \verb|\usepackage{bezierplot}|. T
 \noindent
 The command \verb|\bezierplot| has 6 optional arguments in the sense of
 \begin{center}
-	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX][SAMPLES][NOTATION]{FUNCTION}|
+	\verb|\bezierplot[XMIN][XMAX][YMIN][YMAX][SAMPLES]{FUNCTION}|
 \end{center}
-The defaults are \verb|XMIN| = \verb|YMIN| $= -5$, \verb|XMAX| = \verb|YMAX| $= 5$, \verb|SAMPLES| $= 0$ (this will set as few samples as possible), \verb|NOTATION| $=$ tikz (the only other notation is pgfplots). 
+The defaults are \verb|XMIN| = \verb|YMIN| $= -5$, \verb|XMAX| = \verb|YMAX| $= 5$ and \verb|SAMPLES| $= 0$ (this will set as few samples as possible).
 \begin{center}
 	\begin{tikzpicture}[scale=.7]
 		\draw \bezierplot[-1][2]{x^2};
@@ -118,21 +118,33 @@ will return
 \begin{verbatim}
 (0,2) .. controls (0.0168,2.1905) and (0.2073,3.0978) .. (1.0004,5.001)
 \end{verbatim}
-You can set the window of the graph as follows:
+You can set the window of the graph and the number of samples as follows:
 \begin{verbatim}
-lua bezierplot.lua "FUNCTION" XMIN XMAX YMIN YMAX SAMPLES NOTATION
+lua bezierplot.lua "FUNCTION" XMIN XMAX YMIN YMAX SAMPLES
 \end{verbatim}
 e.g.
 \begin{verbatim}
-lua bezierplot.lua "FUNCTION" 0 1 -3 2.5
+lua bezierplot.lua "FUNCTION" 0 1 -3 2.5 201
 \end{verbatim}
-will set $0\leq x\leq 1$ and $-3\leq y\leq 2.5$. You may also omit the $y$--range, hence
+will set $0\leq x\leq 1$ and $-3\leq y\leq 2.5$ and $201$ equidistant samples. You may also omit the $y$--range, hence
 \begin{verbatim}
 lua bezierplot.lua "FUNCTION" 0 1
 \end{verbatim}
 will set $0\leq x\leq 1$ and leave the default $-5\leq y\leq 5$. The variables \verb|XMIN|, \verb|XMAX|, \verb|YMIN| and \verb|YMAX| may also be computable expressions like \verb|2*pi+6|:
 \begin{verbatim}
 lua bezierplot.lua "sin(x)" -pi pi
+\end{verbatim}
+You may use \verb|huge| for $\infty$:
+\begin{verbatim}
+lua bezierplot "1/x" 0 1 0 huge
+\end{verbatim}
+As \verb|huge| is very huge and \verb|bezierplot| uses recursive calls for nontrivial functions and non--fixed samples, this can last very long:
+\begin{verbatim}
+lua bezierplot "1/x" -5 5 -huge huge
+\end{verbatim}
+But if you set fixed samples, it will be fast again (as this does not use recursive calls):
+\begin{verbatim}
+lua bezierplot "1/x" -5 5 -huge huge 100
 \end{verbatim}
 \subsection{Notation Of Functions}
 The function term given to \verb|bezierplot| must contain at most one variable: $x$. E.g. \verb|"2.3*(x-1)^2-3"|. You must not omit \verb|*| operators:

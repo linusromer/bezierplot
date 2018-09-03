@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
--- version 1.2 2018-07-23
+-- version 1.3 2018-09-03
 abs = math.abs
 acos = math.acos
 asin = math.asin
@@ -646,8 +646,8 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 			x = xmax
 		end
 		local y = f(x)
-		if (y >= ymin-yerror and ymin ~= -huge or y > ymin and ymin == -huge)
-		and (y <= ymax+yerror and ymax ~= huge or y < ymax and ymax == huge)
+		if (y >= ymin-.1*yerror and ymin ~= -huge or y > ymin and ymin == -huge)
+		and (y <= ymax+.1*yerror and ymax ~= huge or y < ymax and ymax == huge)
 		then -- inside
 			if outside then -- if it was outside before
 				outside = false

@@ -8,7 +8,7 @@ points such as extreme points and inflection points and reduces the
 number of used points.
 
 VERSION:
-1.2 2018-07-23
+1.4 2019-06-18
 
 LICENSE:
 The package and the program are distributed on CTAN under the terms of 

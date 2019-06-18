@@ -23,7 +23,7 @@
 \section{Introduction}
 \texttt{bezierplot} is a Lua program as well as a (Lua)\LaTeX{} package. This document describes both.
 
-Given a smooth function, \texttt{bezierplot} returns a smooth bezier path written in Ti\emph{k}Z notation (which also matches \MP{}) that approximates the graph of the function. For polynomial functions of degree $\leq 3$ and inverses of them, the approximation is exact. \texttt{bezierplot} finds special graph points such as extreme points and inflection points and reduces the number of used points.
+Given a smooth function, \texttt{bezierplot} returns a smooth bezier path written in Ti\emph{k}Z notation (which also matches \MP{}) that approximates the graph of the function. For polynomial functions of degree $\leq 3$ and inverses of them, the approximation is exact (up to numeric precision). \texttt{bezierplot} finds special graph points such as extreme points and inflection points and reduces the number of used points.
 
 The following example will show a comparison of \textsc{gnuplot} with \verb|bezierplot| for the function $y=\sqrt{x}$ for $0\leq x \leq 5$:
 \begin{center}
@@ -39,7 +39,7 @@ The following example will show a comparison of \textsc{gnuplot} with \verb|bezi
       		\end{scope}
 	\end{tikzpicture}
 \end{center}
-\textsc{gnuplot} used 51 samples (no smoothing) and is still quite inexact at the beginning, whereas \verb|bezierplot| uses 4 points only and is exact!
+\textsc{gnuplot} used 51 samples (no smoothing) and is still quite inexact at the beginning, whereas \verb|bezierplot| uses 4 points only and is exact (up to numeric precision)!
 \section{Installation}
 As \texttt{bezierplot} is written in Lua, the installation depends whether you are using Lua\LaTeX{} or another \LaTeX{} engine.
 \subsection{Installation For Lua\LaTeX{}}
@@ -179,7 +179,7 @@ The following functions and constants are possible:
 \newpage
 %
 \section{Examples of \texttt{bezierplot} in Comparison with \textsc{gnuplot}}
-The following graphs are drawn with \texttt{bezierplot} (black) and \textsc{gnuplot} (red). \textsc{gnuplot} used 1000 samples per example. The functions are given below the pictures (left: bezierplot, right: \textsc{gnuplot}).
+The following graphs are drawn with \texttt{bezierplot} (black) and \textsc{gnuplot} (red). You may not recognize the red behind the black unless you zoom in. \textsc{gnuplot} used 1000 samples per example. The functions are given below the pictures (left: bezierplot, right: \textsc{gnuplot}).
 \begin{multicols}{3}
 \graphcomparison{0.32*x-0.7}{0.32*x-0.7}
 \graphcomparison{-x^2+4}{-x**2+4}

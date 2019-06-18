@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
--- version 1.3 2018-09-03
+-- version 1.4 2019-06-18
 abs = math.abs
 acos = math.acos
 asin = math.asin
@@ -14,6 +14,24 @@ sin = math.sin
 sqrt = math.sqrt
 tan = math.tan
 huge = math.huge
+
+-- just a helper for debugging:
+local function printdifftable(t)
+	for i = 1,#t do
+		for j = 1, 6 do
+			if j < 5 then
+				io.write(t[i][j].." ")
+			else
+				if t[i][j] then
+					io.write("true ")
+				else
+					io.write("false ")
+				end
+			end
+		end
+		io.write("\n")
+	end
+end
 
 -- cube root defined for all real numbers x
 function cbrt(x)
@@ -66,7 +84,7 @@ local function diffgraph(func,graph,h)
 	local l = #graph
 	if l < 4 then -- this is not worth the pain...
 		for i = 1, l do 
-			table.insert(dgraph,{graph[i][1],graph[i][2],0,0,0,0})
+			table.insert(dgraph,{graph[i][1],graph[i][2],0,0,false,false})
 		end
 	else
 		local yh = func(graph[1][1]-h)
@@ -540,7 +558,12 @@ local function graphtobezierapprox(f,g,starti,endi,maxerror)
 				err = abs(ya-f(xa))
 			end
 		end
-		if err <= maxerror then
+		if (err <= maxerror)
+		and qx > -math.huge and qx < math.huge
+		and qy > -math.huge and qy < math.huge
+		and rx > -math.huge and ry < math.huge
+		and sx > -math.huge and sy < math.huge
+		then
 			return {qx,qy,rx,ry,sx,sy}
 		else
 			-- search for an intermediate point where the graph has the same
@@ -561,7 +584,11 @@ local function graphtobezierapprox(f,g,starti,endi,maxerror)
 			end
 			return left
 		end
-	else
+	elseif qx > -math.huge and qx < math.huge
+	and qy > -math.huge and qy < math.huge
+	and rx > -math.huge and ry < math.huge
+	and sx > -math.huge and sy < math.huge
+	then
 		return {qx,qy,rx,ry,sx,sy}
 	end
 end
@@ -583,16 +610,6 @@ local function graphtobezier(g,starti,endi,isinverse)
 		return {qy,qx,ry,rx,sy,sx}
 	else
 		return {qx,qy,rx,ry,sx,sy}
-	end
-end
-
--- just for debugging:
-local function printtable(t)
-	for i = 1,#t do
-		for j = 1, #t[i] do
-			io.write(t[i][j].." ")
-		end
-		io.write("\n")
 	end
 end
 
@@ -840,6 +857,7 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 			-- go through the connected parts
 			for part = 1, #graphs do 
 				local dg = diffgraph(f,graphs[part],xstep)
+				--printdifftable(dg) -- for debugging
 				bezierpoints[#bezierpoints+1] = {dg[1][1],dg[1][2]}
 				local startindex = 1
 				for k = 2, #dg do

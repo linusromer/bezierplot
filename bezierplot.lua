@@ -34,7 +34,7 @@ local function printdifftable(t)
 end
 
 -- cube root defined for all real numbers x
-local function cbrt(x)
+function cbrt(x)
 	if x < 0 then
 		return -(-x)^(1/3)
 	else
@@ -42,7 +42,7 @@ local function cbrt(x)
 	end
 end
 
-local function sgn(x)
+function sgn(x)
 	if x<0 then
 		return -1
 	elseif x>0 then
@@ -860,8 +860,8 @@ end
 -- https://stackoverflow.com/questions/4521085/main-function-in-lua
 -- As https://www.tug.org/pipermail/luatex/2024-February/007935.html
 -- states, LuaTeX 1.18 has disabled the use of the debug library.
--- Hence, the use of "pcall(debug.getlocal, 4, 1)" is no longer
--- possible without restriction. The problem of the now chosen method is
+-- Hence, using "pcall(debug.getlocal, 4, 1)" is no longer possible
+-- without restriction. The problem with the now chosen method is
 -- that arg could be defined as a global variable in the calling code.
 
 -- main program --

@@ -8,13 +8,13 @@ points such as extreme points and inflection points and reduces the
 number of used points.
 
 VERSION:
-1.4 2019-06-18
+1.5 2024-03-21
 
 LICENSE:
 The package and the program are distributed on CTAN under the terms of 
 the LaTeX Project Public License (LPPL) version 1.3c.
 
-Copyright (c) 2018 Linus Romer
+Copyright (c) 2018-2024 Linus Romer
 
 Please write to 
 linus dot romer at gmx dot ch

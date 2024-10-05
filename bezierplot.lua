@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
--- version 1.5 2024-03-31
+-- version 1.6 2024-10-05
 abs = math.abs
 acos = math.acos
 asin = math.asin
@@ -275,7 +275,7 @@ local function do_parameters_fit(a,b,c,d,funcstring,funcgraph,maxerror,isinverse
 	return true
 end
 
--- f(x)=a*x^3+b*x+c
+-- f(x)=a*x^3+b*x^2+c*x +d
 local function parameters_cubic(xp,yp,xq,yq,xr,yr,xs,ys)
 	return (((xq-xp)*xr^2+(xp^2-xq^2)*xr+xp*xq^2-xp^2*xq)*ys+((xp-xq)
 	*xs^2+(xq^2-xp^2)*xs-xp*xq^2+xp^2*xq)*yr+((xr-xp)*xs^2+(xp^2-xr^2)
@@ -437,7 +437,7 @@ end
 -- and try to approximate it with a cubic bezier curve
 -- (round to rndx and rndy when printing)
 -- if maxerror <= 0, the function will not be recursive anymore
-local function graphtobezierapprox(f,g,starti,endi,maxerror)
+local function graphtobezierapprox(f,g,starti,endi,maxerror,recursiondepth)
 	local px = g[starti][1]
 	local py = g[starti][2]
 	local dp = g[starti][3]
@@ -496,7 +496,7 @@ local function graphtobezierapprox(f,g,starti,endi,maxerror)
 			end
 		end
 	end
-	if maxerror > 0 then
+	if maxerror > 0 and recursiondepth > 0 then
 		-- check if it is close enough: (recycling err, xa, ya)
 		err = 0
 		for t = .1, .9, .1 do
@@ -526,8 +526,8 @@ local function graphtobezierapprox(f,g,starti,endi,maxerror)
 					interindex = i
 				end
 			end
-			local left = graphtobezierapprox(f,g,starti,interindex,maxerror)
-			local right = graphtobezierapprox(f,g,interindex,endi,maxerror)
+			local left = graphtobezierapprox(f,g,starti,interindex,maxerror,recursiondepth-1)
+			local right = graphtobezierapprox(f,g,interindex,endi,maxerror,recursiondepth-1)
 			for i=1, #right do --now append the right to the left:
 				left[#left+1] = right[i]
 			end
@@ -803,7 +803,12 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 	else	
 	---------- generic case (no special function) ----------------		
 		if arbitrary_samples then
-			-- go through the connected parts
+			-- go through the connected parts...
+			-- due to numerical errors we have to use a maximal
+			-- recursion depth, which is hard wired here
+			-- (a small number should suffice since there are
+			-- no extrema nor inflection points inbetween)
+			local maxrecursiondepth = 2 
 			for part = 1, #graphs do 
 				local dg = diffgraph(f,graphs[part],xstep)
 				--printdifftable(dg) -- for debugging
@@ -812,9 +817,9 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 				for k = 2, #dg do
 					if dg[k][5] or dg[k][6] then -- extrema and inflection points
 						local tobeadded = graphtobezierapprox(
-						f,dg,startindex,k,10*yerror)
+						f,dg,startindex,k,10*yerror,maxrecursiondepth)
 						-- tobeadded may contain a multiple of 6 entries
-					-- e.g. {1,2,3,4,5,6,7,8,9,10,11,12}
+						-- e.g. {1,2,3,4,5,6,7,8,9,10,11,12}
 						for i = 1, math.floor(#tobeadded/6) do
 							bezierpoints[#bezierpoints+1] = {}
 							for j = 1, 6 do
@@ -826,7 +831,7 @@ function bezierplot(functionstring,xminstring,xmaxstring,yminstring,ymaxstring,s
 				end
 				if startindex ~= #dg then -- if no special points inbetween
 					local tobeadded = graphtobezierapprox(f,dg,
-					startindex,#dg,10*yerror)
+					startindex,#dg,10*yerror,maxrecursiondepth)
 					-- tobeadded may contain a multiple of 6 entries
 					-- e.g. {1,2,3,4,5,6,7,8,9,10,11,12}
 					for i = 1, math.floor(#tobeadded/6) do

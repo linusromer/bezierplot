@@ -1,19 +1,24 @@
 #!/usr/bin/env lua
 -- Linus Romer, published 2018 under LPPL Version 1.3c
--- version 1.6 2024-10-05
+-- version 1.6 2024-11-02
 abs = math.abs
 acos = math.acos
 asin = math.asin
 atan = math.atan
 cos = math.cos
+cosh = math.cosh
+deg = math.deg
 exp = math.exp
 e = math.exp(1)
+huge = math.huge
 log = math.log
 pi = math.pi
+rad = math.rad
 sin = math.sin
+sinh = math.sinh
 sqrt = math.sqrt
 tan = math.tan
-huge = math.huge
+tanh = math.tanh
 
 -- just a helper for debugging:
 local function printdifftable(t)
@@ -54,8 +59,8 @@ end
 
 local function round(num, decimals)
 	local result = tonumber(string.format("%." .. (decimals or 0) .. "f", num))
-	if abs(result) == 0 then
-		return 0
+	if math.floor(result) == result then
+		return math.floor(result)
 	else
 		return result
 	end

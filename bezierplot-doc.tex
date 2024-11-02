@@ -134,18 +134,6 @@ will set $0\leq x\leq 1$ and leave the default $-5\leq y\leq 5$. The variables \
 \begin{verbatim}
 lua bezierplot.lua "sin(x)" -pi pi
 \end{verbatim}
-You may use \verb|huge| for $\infty$:
-\begin{verbatim}
-lua bezierplot "1/x" 0 1 0 huge
-\end{verbatim}
-As \verb|huge| is very huge and \verb|bezierplot| uses recursive calls for nontrivial functions and non--fixed samples, this can last very long:
-\begin{verbatim}
-lua bezierplot "1/x" -5 5 -huge huge
-\end{verbatim}
-But if you set fixed samples, it will be fast again (as this does not use recursive calls):
-\begin{verbatim}
-lua bezierplot "1/x" -5 5 -huge huge 100
-\end{verbatim}
 \subsection{Notation Of Functions}
 The function term given to \verb|bezierplot| must contain at most one variable: $x$. E.g. \verb|"2.3*(x-1)^2-3"|. You must not omit \verb|*| operators:
 \begin{center}
@@ -164,15 +152,20 @@ The following functions and constants are possible:
 	\verb|atan| & $\tan^{-1}$ inverse function of tangent in radians\\
 	\verb|cbrt| & cube root $\sqrt[3]{\quad}$ that works for negative numbers, too\\
 	\verb|cos| & cosine for angles in radians\\
+	\verb|cosh| & hyperbolic cosine\\
+	\verb|deg| & converts from radians to degrees\\
 	\verb|exp| & the exponential function $e^{(\;)}$\\
 	\verb|huge| & the numerical $\infty$\\
 	\verb|e| & the euler constant $e=\mathrm{exp}(1)$\\
 	\verb|log| & the natural logarithm $\mathrm{log}_e(\;)$\\
 	\verb|pi| & Archimedes’ constant $\pi\approx 3.14$\\
+	\verb|rad| & converts from degrees to radians\\
 	\verb|sgn| & sign function\\
 	\verb|sin| & sine for angles in radians\\
+	\verb|sinh| & hyperbolic sine\\
 	\verb|sqrt| & square root $\sqrt{\quad}$\\
-	\verb|tan| & tangent for angles in radians
+	\verb|tan| & tangent for angles in radians\\
+	\verb|tanh| & hyperbolic tangent
 \end{tabular}
 \end{center}
 %
